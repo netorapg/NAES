@@ -1,27 +1,42 @@
-<footer class="footer">
+<footer class="footer has-background-dark has-text-white">
     <div class="container">
-      <div class="columns">
-        <div class="column">
-          <h3 class="title is-5">CoolSnooker</h3>
-          <p>O melhor jogo de sinuca online!</p>
+        <div class="columns">
+            <!-- Coluna 1: Sobre -->
+            <div class="column">
+                <h4 class="title is-4 has-text-white">CoolSnooker</h4>
+                <p class="has-text-grey-light">
+                    O melhor jogo de sinuca online, desenvolvido com Django e Bulma.
+                </p>
+            </div>
+            
+            <!-- Coluna 2: Links rápidos -->
+            <div class="column">
+                <h4 class="title is-4 has-text-white">Links</h4>
+                <ul>
+                    <li><a class="has-text-primary" href="{% url 'main:home' %}">Home</a></li>
+                    <li><a class="has-text-primary" href="{% url 'main:play' %}">Jogar</a></li>
+                    <li><a class="has-text-primary" href="{% url 'main:about' %}">Sobre</a></li>
+                </ul>
+            </div>
+            
+            <!-- Coluna 3: Contato -->
+            <div class="column">
+                <h4 class="title is-4 has-text-white">Contato</h4>
+                <p class="has-text-grey-light">
+                    <span class="icon-text">
+                        <span class="icon">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                        <span>contato@coolsnooker.com</span>
+                    </span>
+                </p>
+            </div>
         </div>
-        <div class="column">
-          <h3 class="title is-5">Links</h3>
-          <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/play/">Jogar</a></li>
-            <li><a href="/about/">Sobre</a></li>
-          </ul>
+        
+        <div class="content has-text-centered">
+            <p class="has-text-grey-light">
+                © {% now "Y" %} CoolSnooker. Todos os direitos reservados.
+            </p>
         </div>
-        <div class="column">
-          <h3 class="title is-5">Contato</h3>
-          <p>contato@coolsnooker.com</p>
-        </div>
-      </div>
-      <div class="content has-text-centered">
-        <p>
-          © 2023 CoolSnooker - Todos os direitos reservados
-        </p>
-      </div>
     </div>
-  </footer>
+</footer>
