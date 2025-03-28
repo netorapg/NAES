@@ -1,0 +1,11 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Bem-vindo{% endblock %}
+
+{% block content %}
+    <h1 class="title">Bem-vindo ao CoolSnooker!</h1>
+    <div class="content">
+        <a href="{% url 'main:play' %}" class="button is-primary">Jogar</a>
+    </a>
+    </div>
+{% endblock %}
