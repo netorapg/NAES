@@ -1,15 +1,126 @@
-{%load static %}
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Cool Snooker</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
     <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        /* Layout principal */
+        .main-wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .game-section {
+            flex: 1;
+            padding: 1rem;
+            background: #1a1a1a;
+        }
+
+        .game-container {
+            height: 110vh;  /* 75% da altura da viewport */
+            width: 1000vh;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .game-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* Ajustes responsivos */
+        @media screen and (max-width: 768px) {
+            .columns {
+                flex-direction: column;
+            }
+            
+            .game-container {
+                height: 60vh;
+            }
+        }
+    </style>
 </head>
-<body style="margin: 0;">
-    <iframe 
-        src="{% static 'jogo/index.html' %}"
-        style="width: 100vw; height: 100vh; border: none;"
-    ></iframe>
+<body class="has-background-grey-dark">
+    <div class="main-wrapper">
+        <!-- Navbar -->
+        <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/">
+                    <i class="fas fa-8ball fa-2x"></i>
+                    <span class="title is-4 has-text-white ml-2">Sinuca Online</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Seção do Jogo -->
+        <section class="game-section">
+            <div class="game-container">
+                <iframe 
+                    src="{% static 'jogo/index.html' %}"
+                    class="game-iframe"
+                    allowfullscreen
+                ></iframe>
+            </div>
+        </section>
+
+        <!-- Painéis de Informação -->
+        <section class="section pt-0">
+            <div class="container">
+                <div class="columns is-multiline">
+                    <div class="column is-4">
+                        <div class="box has-background-grey">
+                            <h2 class="title is-5 has-text-white"><i class="fas fa-trophy"></i> Placar</h2>
+                            <div class="content has-text-white">
+                                <ul>
+                                    <li>Jogador 1: <span id="score1">0</span></li>
+                                    <li>Jogador 2: <span id="score2">0</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="column is-8">
+                        <div class="box has-background-grey">
+                            <h2 class="title is-5 has-text-white"><i class="fas fa-info-circle"></i> Instruções</h2>
+                            <div class="content has-text-white">
+                                <div class="message is-dark">
+                                    <div class="message-body has-background-grey-light">
+                                        <p><strong>Controles:</strong></p>
+                                        <ul>
+                                            <li>Clique e arraste para mirar</li>
+                                            <li>Solte para tacar</li>
+                                            <li>Scroll do mouse para zoom</li>
+                                            <li>Barra de espaço para reposicionar bola</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer has-background-black has-text-white">
+            <div class="content has-text-centered">
+                <p>
+                    <strong class="has-text-white">Sinuca Online</strong> por 
+                    <a href="#" class="has-text-info">NetoRapG</a>. 
+                    Desenvolvido com <i class="fas fa-heart has-text-danger"></i> e Bulma
+                </p>
+            </div>
+        </footer>
+    </div>
 </body>
 </html>

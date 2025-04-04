@@ -1,0 +1,11 @@
+atualizar o jango
+python manage.py collectstatic --noinput
+
+iniciar projeto
+python manage.py runserver
+
+zipar jogo
+zip -r  jogo.love main.lua menu.lua
+
+Recompilar jogo para web
+npx love.js jogo.love ../sinuca_site/static/jogo/ --title "Sinuca Online" -c
