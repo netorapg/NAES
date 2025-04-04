@@ -4,16 +4,16 @@
 
 h1 {
     font-family: arial;
-    color: rgb(204, 209, 211);
+    color: rgb(255, 255, 255);
 }
 
 body {
-   /* background-image: url(bg.png);*/
+    background-image: url(bg.png);
     background-repeat: no-repeat;
     font-family: arial;
     margin: 0;
     padding: none;
-    background-color: rgb(29, 69, 93);
+    background-color: rgb(154, 237, 179);
     color: rgb( 28, 78, 104 );
 }
 
