@@ -8,13 +8,13 @@ h1 {
 }
 
 body {
-    background-image: url(bg.png);
+    
     background-repeat: no-repeat;
     font-family: arial;
     margin: 0;
     padding: none;
-    background-color: rgb(154, 237, 179);
-    color: rgb( 28, 78, 104 );
+    background-color: rgb(38, 70, 135);
+    color: rgb(221, 221, 221);
 }
 
 footer {

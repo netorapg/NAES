@@ -1,0 +1,72 @@
+@startuml
+skinparam class {
+  BackgroundColor White
+  ArrowColor #444
+  BorderColor #555
+}
+
+class User {
+  + id: UUID
+  + username: String
+  + email: String
+  + createdAt: DateTime
+  + lastLogin: DateTime
+  + isOnline: Boolean
+  + isHost: Boolean
+  + authenticate(password: String): Boolean
+  + sendMessage(message: String): void
+  + receiveMessage(message: ChatMessage): void
+}
+
+class GameTable {
+  + id: UUID
+  + tableType: TableType
+  + status: TableStatus
+  + createdAt: DateTime
+  + createTable(config: TableConfig): void
+  + joinTable(user: User): void
+  + startGame(): Boolean
+}
+
+class GameSession {
+  + id: UUID
+  + startTime: DateTime
+  + endTime: DateTime
+  + currentPlayer: User
+  + scorePlayer1: Integer
+  + scorePlayer2: Integer
+  + calculateScore(): Map<User, Integer>
+  + endGame(winner: User): void
+}
+
+class ChatSystem {
+  + id: UUID
+  + messages: List<ChatMessage>
+  + isActive: Boolean
+  + sendMessage(sender: User, content: String): ChatMessage
+  + getHistory(limit: Integer): List<ChatMessage>
+  + clearHistory(): void
+}
+
+class ChatMessage {
+  + id: UUID
+  + content: String
+  + sender: User
+  + timestamp: DateTime
+  + type: MessageType
+  + isPinned: Boolean
+}
+
+class ModerationSystem {
+  + mutedUsers: Set<User>
+  + filterText(content: String): String
+  + muteUser(user: User, duration: Integer): Boolean
+  + unmuteUser(user: User): void
+}
+
+User "1..2" -- "0..*" GameTable : plays
+GameTable "1" -- "1" GameSession : hosts
+GameTable "1" -- "1" ChatSystem : contains
+ChatSystem "1" -- "0..*" ChatMessage : stores
+ChatSystem --> ModerationSystem : enforces
+@enduml

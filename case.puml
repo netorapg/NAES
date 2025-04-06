@@ -1,0 +1,61 @@
+@startuml
+left to right direction
+actor Player as user
+actor Moderator as mod
+actor System as sys
+
+rectangle "Cool Snooker" {
+  (Criar Mesa) as UC1
+  (Entrar em Mesa) as UC2
+  (Jogar Tacada) as UC3
+  (Gerenciar Chat) as UC4
+  (Finalizar Partida) as UC5
+  (Espectar Jogo) as UC6
+  (Reportar Jogador) as UC7
+  (Moderar Chat) as UC8
+  (Aplicar Regras) as UC9
+  (Notificar Turno) as UC10
+  
+  user --> UC1
+  user --> UC2
+  user --> UC3
+  user --> UC4
+  user --> UC5
+  user --> UC6
+  user --> UC7
+  
+  mod --> UC8
+  
+  sys --> UC9
+  sys --> UC10
+
+  UC1 .> UC2 : <<include>>
+  UC3 .> UC9 : <<extend>>
+  UC4 .> UC8 : <<extend>>
+  UC2 .> UC6 : <<extend>>
+  UC5 .> UC10 : <<extend>>
+}
+
+note top of UC1
+  **Criar Mesa**
+  - Definir tipo (Prática/VS)
+  - Configurar regras
+  - Definir senha opcional
+end note
+
+note right of UC3
+  **Jogar Tacada**
+  1. Posicionar taco
+  2. Ajustar ângulo/potência
+  3. Simular física
+  4. Atualizar estado das bolas
+end note
+
+note left of UC8
+  **Moderação**
+  - Filtrar conteúdo
+  - Mutar jogadores
+  - Remover mensagens
+  - Banir temporariamente
+end note
+@enduml
