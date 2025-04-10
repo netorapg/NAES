@@ -1,351 +1,96 @@
+{% extends 'jogo/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Cool Snooker</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
-    <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- YouTube Player API -->
-    <script src="https://www.youtube.com/iframe_api"></script>
+{% block title %}Jogar Sinuca Online{% endblock %}
 
-    <style>
-        /* Layout principal */
-        .main-wrapper {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        
-        .game-section {
-            flex: 1;
-            padding: 1rem;
-            background: #1a1a1a;
-        }
+{% block extra_css %}
+<style>
+    .game-section {
+        flex: 1;
+        padding: 1rem;
+        background: #1a1a1a;
+    }
 
+    .game-container {
+        height: 109vh;
+        width: 130vh;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .game-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    /* Player de Música */
+    .music-player {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(0,0,0,0.9);
+        border-radius: 10px;
+        width: 300px;
+        z-index: 1000;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+
+    @media screen and (max-width: 768px) {
         .game-container {
-            height: 109vh;
-            width: 130vh;
-            max-width: 1200px;
-            margin: 0 auto;
+            height: 60vh;
         }
+    }
+</style>
+{% endblock %}
 
-        .game-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
+{% block content %}
+<section class="game-section">
+    <div class="game-container">
+        <iframe 
+            src="{% static 'jogo/index.html' %}"
+            class="game-iframe"
+            allowfullscreen
+        ></iframe>
+    </div>
+</section>
 
-        /* Player de Música */
-        .music-player {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.9);
-            border-radius: 10px;
-            width: 300px;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-        }
-
-        .search-container {
-            padding: 15px;
-        }
-
-        #searchInput {
-            width: 100%;
-            padding: 8px 12px;
-            border-radius: 20px;
-            border: none;
-            background: #333;
-            color: white;
-            font-size: 14px;
-        }
-
-        #searchResults {
-            max-height: 200px;
-            overflow-y: auto;
-            margin-top: 10px;
-            display: none;
-        }
-
-        .music-item {
-            padding: 10px;
-            cursor: pointer;
-            color: white;
-            font-size: 13px;
-            border-bottom: 1px solid #333;
-        }
-
-        .music-item:hover {
-            background: rgba(255,255,255,0.1);
-        }
-
-        /* Ajustes responsivos */
-        @media screen and (max-width: 768px) {
-            .columns {
-                flex-direction: column;
-            }
-            
-            .game-container {
-                height: 60vh;
-            }
-
-            .music-player {
-                width: 90%;
-                right: 5%;
-                bottom: 10px;
-            }
-        }
-    </style>
-</head>
-<body class="has-background-grey-dark">
-    <div class="main-wrapper">
-        <!-- Navbar -->
-        <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
-            <div class="navbar-brand">
-                <a class="navbar-item" href="/">
-                    <i class="fas fa-8ball fa-2x"></i>
-                    <span class="title is-4 has-text-white ml-2">Sinuca Online</span>
-                </a>
+<section class="section pt-0">
+    <div class="container">
+        <div class="columns is-multiline">
+            <div class="column is-4">
+                <div class="box has-background-grey">
+                    <h2 class="title is-5 has-text-white"><i class="fas fa-trophy"></i> Placar</h2>
+                    <div class="content has-text-white">
+                        <ul>
+                            <li>Jogador 1: <span id="score1">0</span></li>
+                            <li>Jogador 2: <span id="score2">0</span></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-        </nav>
 
-        <!-- Seção do Jogo -->
-        <section class="game-section">
-            <div class="game-container">
-                <iframe 
-                    src="{% static 'jogo/index.html' %}"
-                    class="game-iframe"
-                    allowfullscreen
-                ></iframe>
-            </div>
-        </section>
-
-        <!-- Painéis de Informação -->
-        <section class="section pt-0">
-            <div class="container">
-                <div class="columns is-multiline">
-                    <div class="column is-4">
-                        <div class="box has-background-grey">
-                            <h2 class="title is-5 has-text-white"><i class="fas fa-trophy"></i> Placar</h2>
-                            <div class="content has-text-white">
+            <div class="column is-8">
+                <div class="box has-background-grey">
+                    <h2 class="title is-5 has-text-white"><i class="fas fa-info-circle"></i> Instruções</h2>
+                    <div class="content has-text-white">
+                        <div class="message is-dark">
+                            <div class="message-body has-background-grey-light">
+                                <p><strong>Controles:</strong></p>
                                 <ul>
-                                    <li>Jogador 1: <span id="score1">0</span></li>
-                                    <li>Jogador 2: <span id="score2">0</span></li>
+                                    <li>Clique e arraste para mirar</li>
+                                    <li>Solte para tacar</li>
+                                    <li>Scroll do mouse para zoom</li>
+                                    <li>Barra de espaço para reposicionar bola</li>
                                 </ul>
                             </div>
                         </div>
                     </div>
-
-                    <div class="column is-8">
-                        <div class="box has-background-grey">
-                            <h2 class="title is-5 has-text-white"><i class="fas fa-info-circle"></i> Instruções</h2>
-                            <div class="content has-text-white">
-                                <div class="message is-dark">
-                                    <div class="message-body has-background-grey-light">
-                                        <p><strong>Controles:</strong></p>
-                                        <ul>
-                                            <li>Clique e arraste para mirar</li>
-                                            <li>Solte para tacar</li>
-                                            <li>Scroll do mouse para zoom</li>
-                                            <li>Barra de espaço para reposicionar bola</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
-        </section>
-
-        <!-- Footer -->
-        <footer class="footer has-background-black has-text-white">
-            <div class="content has-text-centered">
-                <p>
-                    <strong class="has-text-white">Cool Snooker</strong> por 
-                    <a href="#" class="has-text-info">Netorapg</a>. 
-                    Desenvolvido com <i class="fas fa-heart has-text-danger"></i>
-                </p>
-            </div>
-        </footer>
-
-
-       <!-- <div class="music-player">
-            <div class="search-container">
-                <input type="text" id="searchInput" placeholder="🔍 Pesquisar música...">
-                <div id="searchResults"></div>
-            </div>
-            <div id="player"></div>
         </div>
     </div>
-
-    <script>
-        // Configurações otimizadas
-        const API_KEYS = [
-            'AIzaSyDKkdfIng4ruRHpUi-OIzOKDdzcJZOVYto',  // Crie pelo menos 2 chaves no Google Cloud
-            'AIzaSyAE3M43246Xf6V5VPJlVLFkXO4pLT3v5eo'
-        ];
-        
-        const searchCache = new Map();
-        let searchTimeout;
-        let youtubePlayer = null;
-        let playerReady = false;
-        let pendingVideoId = null;
-    
-        // Função para rotacionar chaves
-        function getRandomKey() {
-            return API_KEYS[Math.floor(Math.random() * API_KEYS.length)];
-        }
-    
-        function onYouTubeIframeAPIReady() {
-            youtubePlayer = new YT.Player('player', {
-                height: '0',
-                width: '0',
-                playerVars: {
-                    autoplay: 1,
-                    controls: 0,
-                    disablekb: 1,
-                    modestbranding: 1,
-                    enablejsapi: 1,
-                    origin: window.location.origin
-                },
-                events: {
-                    'onReady': function(event) {
-                        playerReady = true;
-                        console.log('Player inicializado');
-                        event.target.setVolume(100);
-                        
-                        if (pendingVideoId) {
-                            event.target.loadVideoById(pendingVideoId);
-                            pendingVideoId = null;
-                        }
-                    },
-                    'onStateChange': (event) => {
-                        console.log('Estado:', event.data);
-                    }
-                }
-            });
-        }
-    
-        async function searchYouTube(query) {
-            const resultsContainer = document.getElementById('searchResults');
-            
-            // Verifica cache primeiro
-            if(searchCache.has(query)) {
-                showResults(searchCache.get(query));
-                return;
-            }
-    
-            try {
-                const response = await fetch(
-                    `https://www.googleapis.com/youtube/v3/search?` + 
-                    `part=snippet&` +
-                    `maxResults=3&` +  // Reduzido de 5 para 3
-                    `q=${encodeURIComponent(query)}&` +
-                    `type=video&` +
-                    `fields=items(id/videoId,snippet/title,snippet/channelTitle)&` +  // Campos específicos
-                    `key=${getRandomKey()}`  // Usa rotação de chaves
-                );
-    
-                if (!response.ok) {
-                    if(response.status === 403) showNativePlayer(query);
-                    throw new Error(`Erro HTTP: ${response.status}`);
-                }
-    
-                const data = await response.json();
-                
-                if (data.error) throw data.error;
-                
-                // Armazena no cache por 5 minutos
-                searchCache.set(query, data.items);
-                setTimeout(() => searchCache.delete(query), 300000);
-                
-                showResults(data.items);
-    
-            } catch (error) {
-                console.error('Erro:', error);
-                resultsContainer.innerHTML = `
-                    <div class="music-item has-text-danger">
-                        ${error.message || 'Erro na pesquisa'}
-                    </div>
-                `;
-                resultsContainer.style.display = 'block';
-            }
-        }
-    
-        function showResults(items) {
-            const resultsContainer = document.getElementById('searchResults');
-            resultsContainer.innerHTML = items.map(item => `
-                <div class="music-item" data-id="${item.id.videoId}">
-                    <div>${item.snippet.title}</div>
-                    <small>${item.snippet.channelTitle}</small>
-                </div>
-            `).join('');
-    
-            resultsContainer.style.display = 'block';
-            
-            document.querySelectorAll('.music-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    const videoId = item.dataset.id;
-                    if(playerReady) {
-                        youtubePlayer.loadVideoById(videoId);
-                    } else {
-                        pendingVideoId = videoId;
-                    }
-                    resultsContainer.style.display = 'none';
-                });
-            });
-        }
-    
-        // Sistema de fallback
-        function showNativePlayer(query) {
-            const fallbackHTML = `
-                <div class="notification is-warning">
-                    Usando player alternativo...
-                    <iframe 
-                        width="300" 
-                        height="80" 
-                        src="https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(query)}&autoplay=1" 
-                        allow="autoplay">
-                    </iframe>
-                </div>
-            `;
-            document.body.insertAdjacentHTML('beforeend', fallbackHTML);
-        }
-    
-        // Evento de input com debounce
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            const query = e.target.value.trim();
-            resultsContainer.style.display = 'none';
-            
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                if(query.length > 2) searchYouTube(query);
-            }, 500);
-        });
-    
-        // Carregamento seguro da API
-        if(typeof YT === 'undefined') {
-            const tag = document.createElement('script');
-            tag.src = "https://www.youtube.com/iframe_api";
-            tag.async = true;
-            document.body.appendChild(tag);
-        }
-    
-        // Pré-cache de buscas comuns
-        window.addEventListener('load', () => {
-            ['lo-fi', 'jazz', 'música ambiente'].forEach(query => {
-                if(!searchCache.has(query)) searchYouTube(query);
-            });
-        });
-    </script>-->
-    
-</body>
-</html>
+</section>
+{% endblock %}

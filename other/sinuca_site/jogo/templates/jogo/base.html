@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}Cool Snooker{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
+    <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {% block extra_head %}
+    <!-- YouTube Player API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    {% endblock %}
+
+    <style>
+        /* Estilos base comuns */
+        .main-wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body class="has-background-grey-dark">
+    <div class="main-wrapper">
+        <!-- Navbar -->
+        <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="{% url 'jogo:home' %}">
+                    <i class="fas fa-8ball fa-2x"></i>
+                    <span class="title is-4 has-text-white ml-2">Sinuca Online</span>
+                </a>
+            </div>
+        </nav>
+
+        {% block content %}
+        <!-- Conteúdo principal será inserido aqui -->
+        {% endblock %}
+
+        <!-- Footer -->
+        <footer class="footer has-background-black has-text-white">
+            <div class="content has-text-centered">
+                <p>
+                    <strong class="has-text-white">Cool Snooker</strong> por 
+                    <a href="#" class="has-text-info">Netorapg</a>. 
+                    Desenvolvido com <i class="fas fa-heart has-text-danger"></i>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
