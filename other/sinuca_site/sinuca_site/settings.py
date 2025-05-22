@@ -128,3 +128,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 AUTH_USER_MODEL = 'protocolos.User'  # Define o modelo de usuário personalizado
+
+# Redirecionamento após login bem-sucedido
+LOGIN_REDIRECT_URL = '/sinuca/'
+
+# Redirecionamento para login quando acesso negado
+LOGIN_URL = '/login/'

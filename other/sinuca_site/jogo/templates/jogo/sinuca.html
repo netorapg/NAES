@@ -57,6 +57,7 @@
 {% endblock %}
 
 {% block content %}
+{% if user.is_authenticated %}
 <section class="game-section">
     <div class="game-container">
         <iframe 
@@ -143,5 +144,5 @@ document.addEventListener('DOMContentLoaded', function() {
     checkLocalStorage();
 });
 </script>
-
+{% endif %}
 {% endblock %}
