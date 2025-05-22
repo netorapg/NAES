@@ -1,0 +1,30 @@
+{% extends 'jogo/base.html' %}
+
+{% block content %}
+<div class="columns is-centered">
+    <div class="column is-half">
+        <div class="box">
+            <h1 class="title">Cadastro</h1>
+            <form method="post">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="field">
+                    <label class="label">{{ field.label }}</label>
+                    <div class="control">
+                        {{ field }}
+                        {% if field.help_text %}
+                        <p class="help">{{ field.help_text }}</p>
+                        {% endif %}
+                        {% for error in field.errors %}
+                        <p class="help is-danger">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+                <button type="submit" class="button is-primary is-fullwidth">Cadastrar</button>
+            </form>
+            <p class="mt-3 has-text-centered">Já tem conta? <a href="{% url 'jogo:login' %}">Faça login</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,19 +1,32 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-class User(models.Model):
-    username = models.CharField(max_length=50)
-    email = models.EmailField()
-    password = models.CharField(max_length=100)
+class User(AbstractUser):  # Herda de AbstractUser ao invés de models.Model
+    # Mantenha seus campos customizados
     created_at = models.DateTimeField(auto_now_add=True)
-    lasLogin = models.DateTimeField(auto_now=True)
+    lastLogin = models.DateTimeField(auto_now=True)
     isOnline = models.BooleanField(default=False)
     isHost = models.BooleanField(default=False)
+    pontuacao_maxima = models.IntegerField(default=0)
+    
+    # Remova o campo password pois já vem do AbstractUser
+    # Remova email pois já vem do AbstractUser
+    
+    # Adicione os related_name necessários
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='protocolos_user_set',
+        blank=True,
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='protocolos_user_set',
+        blank=True,
+    )
 
     def __str__(self):
         return f"{self.username} ({self.email})"
-
-
 class GameTable ( models.Model):
     TableType = models.ForeignKey('TableType', on_delete=models.CASCADE)
     table_number = models.IntegerField()
