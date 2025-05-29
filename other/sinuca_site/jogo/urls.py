@@ -12,4 +12,9 @@ urlpatterns = [
     path('sinuca/', views.sinuca_view, name='sinuca'),
     path('perfil/', views.perfil_view, name='perfil'), 
     path('ranking/', views.ranking_view, name='ranking'),
+    path('users/', views.UserListView.as_view(), name='user_list'),
+    path('users/<int:pk>/edit/', views.UserUpdateView.as_view(), name='user_edit'),
+    path('users/<int:pk>/delete/', views.UserDeleteView.as_view(), name='user_delete'),
+    path('users/create/', views.UserCreateView.as_view(), name='user_create'),
+    path('users/<int:pk>/', views.UserDetailView.as_view(), name='user_detail'),
 ]

@@ -2,9 +2,12 @@ import os
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .forms import CadastroForm, LoginForm
+from .forms import CadastroForm, LoginForm, CustomUserCreationForm, CustomUserChangeForm
 from protocolos.models import User
-
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
+from django.urls import reverse_lazy
+from django.db.models import Q
 def sinuca(request):
     return render(request, 'jogo/sobre.html')
 
@@ -74,3 +77,46 @@ def ranking_view(request):
     from protocolos.models import User
     usuarios = User.objects.order_by('-pontuacao_maxima')[:10]  # Exemplo com campo fictício
     return render(request, 'jogo/ranking.html', {'usuarios': usuarios})
+
+
+class UserListView(LoginRequiredMixin, ListView):
+    model = User
+    template_name = 'users/user_list.html'
+    context_object_name = 'users'
+    paginate_by = 20
+    ordering = ['username']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(username__icontains=search) |
+                Q(email__icontains=search)
+            )
+        return queryset
+
+class UserCreateView(PermissionRequiredMixin, CreateView):
+    model = User
+    form_class = CustomUserCreationForm
+    template_name = 'users/user_form.html'
+    success_url = reverse_lazy('user_list')
+    permission_required = 'auth.add_user'
+
+class UserDetailView(LoginRequiredMixin, DetailView):
+    model = User
+    template_name = 'users/user_detail.html'
+    context_object_name = 'user'
+
+class UserUpdateView(PermissionRequiredMixin, UpdateView):
+    model = User
+    form_class = CustomUserChangeForm
+    template_name = 'users/user_form.html'
+    success_url = reverse_lazy('jogo:user_list')
+    permission_required = 'auth.change_user'
+
+class UserDeleteView(PermissionRequiredMixin, DeleteView):
+    model = User
+    template_name = 'users/user_confirm_delete.html'
+    success_url = reverse_lazy('jogo:user_list')
+    permission_required = 'auth.delete_user'

@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'crispy_forms',
+    'crispy_bootstrap5',
 ]
 
 MIDDLEWARE = [
@@ -56,7 +58,9 @@ ROOT_URLCONF = 'sinuca_site.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / 'templates',  # Adicione esta linha
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -129,8 +133,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'protocolos.User'  # Define o modelo de usuário personalizado
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'  # Diretório para arquivos de mídia
+
 # Redirecionamento após login bem-sucedido
 LOGIN_REDIRECT_URL = '/sinuca/'
 
 # Redirecionamento para login quando acesso negado
 LOGIN_URL = '/login/'
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
