@@ -4,6 +4,15 @@
 {% block title %}Sobre o Projeto{% endblock %}
 
 {% block content %}
+<div class="container mb-5">
+    <a href="{% url 'jogo:sinuca' %}" class="button is-primary is-medium">
+        <span class="icon">
+            <i class="fas fa-gamepad"></i>
+        </span>
+        <span>Jogar Sinuca</span>
+    </a>
+</div>
+
 <div class="sobre-container section">
     <div class="container">
         <h1 class="title has-text-white">Sobre o Projeto Sinuca Online</h1>
