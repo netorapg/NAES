@@ -4,10 +4,11 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import CadastroForm, LoginForm, CustomUserCreationForm, CustomUserChangeForm
 from protocolos.models import User
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
 from django.db.models import Q
+from django.contrib import messages  # Adicione no topo do arquivo
 def sinuca(request):
     return render(request, 'jogo/sobre.html')
 
@@ -108,15 +109,32 @@ class UserDetailView(LoginRequiredMixin, DetailView):
     template_name = 'users/user_detail.html'
     context_object_name = 'user'
 
-class UserUpdateView(PermissionRequiredMixin, UpdateView):
+class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = User
-    form_class = CustomUserChangeForm
+    fields = ['username', 'email', 'isHost', 'pontuacao_maxima']
     template_name = 'users/user_form.html'
     success_url = reverse_lazy('jogo:user_list')
-    permission_required = 'auth.change_user'
+    
+    def test_func(self):
+        user = self.get_object()
+        return self.request.user == user or self.request.user.is_superuser
 
-class UserDeleteView(PermissionRequiredMixin, DeleteView):
+
+class UserDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = User
     template_name = 'users/user_confirm_delete.html'
     success_url = reverse_lazy('jogo:user_list')
-    permission_required = 'auth.delete_user'
+    
+    def test_func(self):
+        """Verifica se o usuário pode deletar o perfil"""
+        user = self.get_object()
+        return (
+            self.request.user.is_superuser or  # Superusuário pode deletar qualquer conta
+            self.request.user == user  # Usuário pode deletar sua própria conta
+        )
+    
+    def delete(self, request, *args, **kwargs):
+        """Adiciona mensagem de sucesso ao deletar"""
+        response = super().delete(request, *args, **kwargs)
+        messages.success(request, 'Usuário deletado com sucesso!')
+        return response
