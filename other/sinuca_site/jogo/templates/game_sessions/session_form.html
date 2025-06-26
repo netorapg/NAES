@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Nova Sessão{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Nova Sessão de Jogo</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="{{ form.currentPlayer.id_for_label }}" class="form-label">Jogador Atual</label>
+            {{ form.currentPlayer }}
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.scorePlayer1.id_for_label }}" class="form-label">Score Jogador 1</label>
+            {{ form.scorePlayer1 }}
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.scorePlayer2.id_for_label }}" class="form-label">Score Jogador 2</label>
+            {{ form.scorePlayer2 }}
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Criar Sessão</button>
+        <a href="{% url 'jogo:session_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

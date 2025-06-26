@@ -1,23 +1,94 @@
 {% extends 'base.html' %}
 
+{% block title %}Usuários - Administração{% endblock %}
+
 {% block content %}
-<h1>Lista de Usuários</h1>
-<a href="{% url 'jogo:user_create' %}" class="btn btn-primary mb-3">Novo Usuário</a>
+<div class="container mt-4">
+    <div class="box has-background-dark">
+        <div class="level">
+            <div class="level-left">
+                <h1 class="title has-text-white">
+                    <i class="fas fa-users mr-3"></i>
+                    Gerenciar Usuários
+                </h1>
+            </div>
+            <div class="level-right">
+                <a href="{% url 'jogo:user_create' %}" class="button is-primary">
+                    <i class="fas fa-user-plus mr-2"></i>
+                    Novo Usuário
+                </a>
+            </div>
+        </div>
 
-<form method="get" class="mb-3">
-    <div class="input-group">
-        <input type="text" name="search" class="form-control" placeholder="Buscar usuários...">
-        <button type="submit" class="btn btn-outline-secondary">Buscar</button>
+        <div class="table-container">
+            <table class="table is-fullwidth is-hoverable has-background-dark has-text-white">
+                <thead>
+                    <tr class="has-background-grey-dark">
+                        <th class="has-text-white">Username</th>
+                        <th class="has-text-white">Email</th>
+                        <th class="has-text-white">Nome</th>
+                        <th class="has-text-white">Online</th>
+                        <th class="has-text-white">Criado em</th>
+                        <th class="has-text-white">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user_item in users %}
+                    <tr>
+                        <td>
+                            <strong>{{ user_item.username }}</strong>
+                            {% if user_item.is_staff %}
+                                <span class="tag is-warning is-small ml-2">Admin</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user_item.email|default:"-" }}</td>
+                        <td>{{ user_item.get_full_name|default:"-" }}</td>
+                        <td>
+                            {% if user_item.isOnline %}
+                                <span class="tag is-success">Online</span>
+                            {% else %}
+                                <span class="tag is-light">Offline</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user_item.created_at|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <div class="buttons">
+                                <a href="{% url 'jogo:user_edit' user_item.pk %}" 
+                                   class="button is-small is-info">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'jogo:user_delete' user_item.pk %}" 
+                                   class="button is-small is-danger"
+                                   onclick="return confirm('Tem certeza?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="has-text-centered has-text-grey">
+                            Nenhum usuário encontrado.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if is_paginated %}
+        <nav class="pagination is-centered" role="navigation">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="pagination-previous">Anterior</a>
+            {% endif %}
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="pagination-next">Próximo</a>
+            {% endif %}
+        </nav>
+        {% endif %}
     </div>
-</form>
-
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Host</th>
-            <th>Pontuação Máxima</th>
+</div>
+{% endblock %}
             <th>Status</th>
             <th>Ações</th>
         </tr>

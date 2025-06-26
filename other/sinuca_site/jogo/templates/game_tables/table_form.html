@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Nova Mesa{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Nova Mesa de Jogo</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="{{ form.TableType.id_for_label }}" class="form-label">Tipo de Mesa</label>
+            {{ form.TableType }}
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.table_number.id_for_label }}" class="form-label">Número da Mesa</label>
+            {{ form.table_number }}
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
+            {{ form.status }}
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Criar Mesa</button>
+        <a href="{% url 'jogo:table_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

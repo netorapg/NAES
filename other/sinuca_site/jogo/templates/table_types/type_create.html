@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Novo Tipo{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Novo Tipo de Mesa</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="{{ form.table_type.id_for_label }}" class="form-label">Tipo</label>
+            {{ form.table_type }}
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.description.id_for_label }}" class="form-label">Descrição</label>
+            {{ form.description }}
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Criar Tipo</button>
+        <a href="{% url 'jogo:type_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

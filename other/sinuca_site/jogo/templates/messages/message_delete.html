@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Excluir Mensagem{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Excluir Mensagem</h2>
+    <p>Tem certeza que deseja excluir esta mensagem?</p>
+    <blockquote class="blockquote">
+        <p>{{ object.content|truncatewords:20 }}</p>
+        <footer class="blockquote-footer">{{ object.sender.username }}</footer>
+    </blockquote>
+    
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Sim, excluir</button>
+        <a href="{% url 'jogo:message_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

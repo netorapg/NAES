@@ -199,7 +199,7 @@
                                         <a href="{% url 'jogo:jogar' mesa.id %}" class="button is-success">
                                             <i class="fas fa-play mr-1"></i> Jogar
                                         </a>
-                                    {% elif mesa.usuario_pode_entrar and user not in mesa.jogadores.all %}
+                                    {% elif mesa.pode_entrar and user not in mesa.jogadores.all %}
                                         <a href="{% url 'jogo:entrar_mesa' mesa.id %}" class="button is-primary">
                                             <i class="fas fa-sign-in-alt mr-1"></i> Entrar
                                         </a>
@@ -248,4 +248,102 @@
         <i class="fas fa-plus"></i>
     </a>
 </div>
+{% endblock %}
+
+    .score-display.updating{
+        transform: scale(1.1);
+        color: #4ade80;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if user.is_authenticated %}
+<section class="game-section">
+    <div class="game-container">
+        <iframe 
+            src="{% static 'jogo/index.html' %}"
+            class="game-iframe"
+            allowfullscreen
+            allow="gamepad; fullscreeen"
+        ></iframe>
+    </div>
+</section>
+
+<section class="section pt-0">
+    <div class="container">
+        <div class="columns is-multiline">
+            <div class="column is-4">
+                <div class="box has-background-grey">
+                    <h2 class="title is-5 has-text-white"><i class="fas fa-trophy"></i> Placar</h2>
+                    <div class="content has-text-white">
+                        <ul>
+                            <li>Pontuação: <span id="score1" class="score-display">0</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column is-8">
+                <div class="box has-background-grey">
+                    <h2 class="title is-5 has-text-white"><i class="fas fa-info-circle"></i> Instruções</h2>
+                    <div class="content has-text-white">
+                        <div class="message is-dark">
+                            <div class="message-body has-background-grey-light">
+                                <p><strong>Controles:</strong></p>
+                                <ul>
+                                    <li>Clique e arraste para mirar</li>
+                                    <li>Solte para tacar</li>
+                                    <li>Scroll do mouse para zoom</li>
+                                    <li>Barra de espaço para reposicionar bola</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const scoreElement = document.getElementById('score1');
+    
+    function updateScore(value) {
+        // Animação
+        scoreElement.classList.add('updating');
+        setTimeout(() => {
+            scoreElement.classList.remove('updating');
+        }, 300);
+        
+        // Atualização do valor
+        scoreElement.textContent = value;
+    }
+
+    window.addEventListener('message', function(event) {
+        if (event.data.type === 'scoreUpdate') {
+            updateScore(event.data.score);
+        }
+    });
+
+    function checkLocalStorage() {
+        const score = localStorage.getItem('sinucaScore');
+        if (score && scoreElement.textContent !== score) {
+            updateScore(score);
+        }
+    }
+    
+    setInterval(checkLocalStorage, 500);
+    
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'sinucaScore') {
+            checkLocalStorage();
+        }
+    });
+    
+    checkLocalStorage();
+});
+</script>
+{% endif %}
 {% endblock %}

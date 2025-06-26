@@ -1,0 +1,412 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ mesa.nome }} - Jogar Sinuca{% endblock %}
+
+{% block extra_css %}
+<style>
+    .game-section {
+        flex: 1;
+        padding: 1rem;
+        background: #1a1a1a;
+        min-height: calc(100vh - 150px);
+    }
+
+    .game-header {
+        background: rgba(0,0,0,0.8);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        color: white;
+    }
+
+    .game-container {
+        height: 70vh;
+        max-width: 1200px;
+        margin: 0 auto;
+        position: relative;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 0 30px rgba(0,0,0,0.8);
+    }
+
+    .game-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        background: #2c3e50;
+    }
+
+    .players-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .player-card {
+        background: linear-gradient(135deg, #34495e, #2c3e50);
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .player-card.current-player {
+        border-color: #e74c3c;
+        box-shadow: 0 0 20px rgba(231, 76, 60, 0.3);
+    }
+
+    .player-avatar {
+        width: 50px;
+        height: 50px;
+        background: #e74c3c;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.5rem;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        flex-direction: column;
+    }
+
+    .loading-spinner {
+        border: 3px solid #34495e;
+        border-top: 3px solid #e74c3c;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .game-controls {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .control-btn {
+        background: #e74c3c;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+
+    .control-btn:hover {
+        background: #c0392b;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+    }
+
+    .control-btn:disabled {
+        background: #7f8c8d;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .exit-btn {
+        background: #7f8c8d;
+    }
+
+    .exit-btn:hover {
+        background: #95a5a6;
+    }
+
+    @media screen and (max-width: 768px) {
+        .game-container {
+            height: 50vh;
+        }
+        
+        .players-info {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="game-section">
+    <div class="container">
+        <!-- Cabeçalho do Jogo -->
+        <div class="game-header">
+            <div class="level">
+                <div class="level-left">
+                    <div>
+                        <h1 class="title is-4 has-text-white mb-2">
+                            <i class="fas fa-bowling-ball mr-2"></i>
+                            {{ mesa.nome }}
+                        </h1>
+                        <div class="tags">
+                            <span class="tag is-info">
+                                <i class="fas fa-users mr-1"></i>
+                                {{ jogadores.count }} jogadores
+                            </span>
+                            <span class="tag is-success">
+                                {{ mesa.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="level-right">
+                    <a href="{% url 'jogo:sinuca' %}" class="button is-light">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Voltar às Mesas
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informações dos Jogadores -->
+        <div class="players-info">
+            {% for jogador in jogadores %}
+            <div class="player-card {% if forloop.first %}current-player{% endif %}">
+                <div class="player-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h3 class="title is-6 has-text-white">{{ jogador.username }}</h3>
+                <p class="has-text-grey-light">
+                    {% if jogador == mesa.criador %}
+                        <i class="fas fa-crown has-text-warning mr-1"></i>
+                        Host
+                    {% else %}
+                        <i class="fas fa-gamepad mr-1"></i>
+                        Jogador
+                    {% endif %}
+                </p>
+                <div class="mt-2">
+                    <span class="tag is-primary">Pontos: 0</span>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <!-- Slots vazios -->
+            {% if jogadores.count < mesa.max_jogadores %}
+                {% for i in "x"|rjust:mesa.max_jogadores|slice:jogadores.count %}
+                <div class="player-card">
+                    <div class="player-avatar" style="background: #7f8c8d;">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <h3 class="title is-6 has-text-grey">Aguardando jogador...</h3>
+                    <p class="has-text-grey">Slot vazio</p>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <!-- Container do Jogo -->
+        <div class="game-container">
+            <div class="loading-overlay" id="loading-overlay">
+                <div class="loading-spinner"></div>
+                <p class="has-text-white title is-5">Carregando jogo...</p>
+                <p class="has-text-grey-light">Preparando a mesa de sinuca</p>
+            </div>
+            
+            <iframe 
+                src="{% static 'jogo/index.html' %}" 
+                class="game-iframe"
+                id="game-iframe"
+                onload="hideLoading()"
+                allow="autoplay; encrypted-media">
+                <div class="has-text-centered p-6">
+                    <p class="title is-4 has-text-white">
+                        <i class="fas fa-exclamation-triangle has-text-warning mr-2"></i>
+                        Seu navegador não suporta o jogo
+                    </p>
+                    <p class="has-text-grey-light">
+                        Por favor, utilize um navegador mais recente para jogar.
+                    </p>
+                </div>
+            </iframe>
+        </div>
+
+        <!-- Controles do Jogo -->
+        <div class="game-controls">
+            <button class="control-btn" onclick="resetGame()" title="Reiniciar Jogo">
+                <i class="fas fa-redo mr-2"></i>
+                Reiniciar
+            </button>
+            
+            <button class="control-btn" onclick="toggleFullscreen()" title="Tela Cheia">
+                <i class="fas fa-expand mr-2"></i>
+                Tela Cheia
+            </button>
+            
+            <button class="control-btn" onclick="toggleSound()" id="sound-btn" title="Som">
+                <i class="fas fa-volume-up mr-2"></i>
+                Som
+            </button>
+            
+            <a href="{% url 'jogo:sair_mesa' mesa.id %}" 
+               class="control-btn exit-btn"
+               onclick="return confirm('Tem certeza que deseja sair da mesa?')"
+               title="Sair da Mesa">
+                <i class="fas fa-sign-out-alt mr-2"></i>
+                Sair da Mesa
+            </a>
+        </div>
+
+        <!-- Status da Conexão -->
+        <div class="has-text-centered mt-4">
+            <span class="tag is-success" id="connection-status">
+                <i class="fas fa-wifi mr-1"></i>
+                Conectado
+            </span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let isFullscreen = false;
+    let soundEnabled = true;
+
+    // Esconde o overlay de loading
+    function hideLoading() {
+        setTimeout(() => {
+            const overlay = document.getElementById('loading-overlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+            }
+        }, 2000);
+    }
+
+    // Reinicia o jogo
+    function resetGame() {
+        const iframe = document.getElementById('game-iframe');
+        const overlay = document.getElementById('loading-overlay');
+        
+        if (confirm('Tem certeza que deseja reiniciar o jogo?')) {
+            overlay.style.display = 'flex';
+            iframe.src = iframe.src; // Recarrega o iframe
+            
+            // Reset visual dos jogadores
+            document.querySelectorAll('.player-card').forEach(card => {
+                card.classList.remove('current-player');
+            });
+            
+            // Primeiro jogador volta a ser o atual
+            const firstPlayer = document.querySelector('.player-card');
+            if (firstPlayer) {
+                firstPlayer.classList.add('current-player');
+            }
+        }
+    }
+
+    // Toggle tela cheia
+    function toggleFullscreen() {
+        const gameContainer = document.querySelector('.game-container');
+        const btn = event.target.closest('.control-btn');
+        
+        if (!isFullscreen) {
+            if (gameContainer.requestFullscreen) {
+                gameContainer.requestFullscreen();
+            } else if (gameContainer.webkitRequestFullscreen) {
+                gameContainer.webkitRequestFullscreen();
+            } else if (gameContainer.msRequestFullscreen) {
+                gameContainer.msRequestFullscreen();
+            }
+            
+            btn.innerHTML = '<i class="fas fa-compress mr-2"></i>Sair Tela Cheia';
+            isFullscreen = true;
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+            
+            btn.innerHTML = '<i class="fas fa-expand mr-2"></i>Tela Cheia';
+            isFullscreen = false;
+        }
+    }
+
+    // Toggle som
+    function toggleSound() {
+        const btn = document.getElementById('sound-btn');
+        soundEnabled = !soundEnabled;
+        
+        if (soundEnabled) {
+            btn.innerHTML = '<i class="fas fa-volume-up mr-2"></i>Som';
+            btn.title = 'Desativar Som';
+        } else {
+            btn.innerHTML = '<i class="fas fa-volume-mute mr-2"></i>Mudo';
+            btn.title = 'Ativar Som';
+        }
+        
+        // Aqui você pode enviar comando para o jogo se necessário
+        const iframe = document.getElementById('game-iframe');
+        iframe.contentWindow.postMessage({
+            type: 'sound_toggle',
+            enabled: soundEnabled
+        }, '*');
+    }
+
+    // Detecta mudança de tela cheia
+    document.addEventListener('fullscreenchange', function() {
+        if (!document.fullscreenElement) {
+            const btn = document.querySelector('[onclick="toggleFullscreen()"]');
+            btn.innerHTML = '<i class="fas fa-expand mr-2"></i>Tela Cheia';
+            isFullscreen = false;
+        }
+    });
+
+    // Comunicação com o jogo
+    window.addEventListener('message', function(event) {
+        if (event.data && event.data.type === 'game_update') {
+            // Aqui você pode atualizar o UI baseado no estado do jogo
+            console.log('Atualização do jogo:', event.data);
+        }
+    });
+
+    // Simula mudança de jogador atual (exemplo)
+    function switchCurrentPlayer() {
+        const players = document.querySelectorAll('.player-card');
+        let currentIndex = 0;
+        
+        players.forEach((player, index) => {
+            if (player.classList.contains('current-player')) {
+                player.classList.remove('current-player');
+                currentIndex = index;
+            }
+        });
+        
+        const nextIndex = (currentIndex + 1) % players.length;
+        if (players[nextIndex] && !players[nextIndex].querySelector('.fas.fa-plus')) {
+            players[nextIndex].classList.add('current-player');
+        }
+    }
+
+    // Simulação de mudança de jogador a cada 30 segundos (apenas para demo)
+    // setInterval(switchCurrentPlayer, 30000);
+</script>
+{% endblock %}

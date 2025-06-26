@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Sistemas de Chat{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Sistemas de Chat</h2>
+    <a href="{% url 'jogo:chat_create' %}" class="btn btn-primary mb-3">Novo Sistema</a>
+    
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Mensagens</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for chat in chat_systems %}
+                <tr>
+                    <td>{{ chat.id }}</td>
+                    <td>{{ chat.messages|truncatewords:10 }}</td>
+                    <td>
+                        {% if chat.isActive %}
+                            <span class="badge bg-success">Ativo</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inativo</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'jogo:chat_edit' chat.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                        <a href="{% url 'jogo:chat_delete' chat.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">Nenhum sistema de chat encontrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

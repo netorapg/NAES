@@ -131,7 +131,8 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-AUTH_USER_MODEL = 'protocolos.User'  # Define o modelo de usuário personalizado
+# Configuração para usar o modelo de usuário customizado
+AUTH_USER_MODEL = 'jogo.User'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'  # Diretório para arquivos de mídia
@@ -144,3 +145,7 @@ LOGIN_URL = '/login/'
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+# Limpar sessões automaticamente
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True

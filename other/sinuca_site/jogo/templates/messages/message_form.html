@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Nova Mensagem{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Nova Mensagem</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="{{ form.content.id_for_label }}" class="form-label">Conteúdo</label>
+            {{ form.content }}
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.sender.id_for_label }}" class="form-label">Remetente</label>
+            {{ form.sender }}
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.type.id_for_label }}" class="form-label">Tipo</label>
+            {{ form.type }}
+        </div>
+        <div class="mb-3 form-check">
+            {{ form.isPinned }}
+            <label for="{{ form.isPinned.id_for_label }}" class="form-check-label">Fixar mensagem</label>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Criar Mensagem</button>
+        <a href="{% url 'jogo:message_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

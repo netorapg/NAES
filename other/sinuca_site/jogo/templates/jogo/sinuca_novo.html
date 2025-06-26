@@ -199,7 +199,7 @@
                                         <a href="{% url 'jogo:jogar' mesa.id %}" class="button is-success">
                                             <i class="fas fa-play mr-1"></i> Jogar
                                         </a>
-                                    {% elif mesa.usuario_pode_entrar and user not in mesa.jogadores.all %}
+                                    {% elif mesa.pode_entrar and user not in mesa.jogadores.all %}
                                         <a href="{% url 'jogo:entrar_mesa' mesa.id %}" class="button is-primary">
                                             <i class="fas fa-sign-in-alt mr-1"></i> Entrar
                                         </a>
