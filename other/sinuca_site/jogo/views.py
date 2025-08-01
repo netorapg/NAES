@@ -151,9 +151,13 @@ def jogar(request, mesa_id):
         messages.error(request, 'Você não está nesta mesa.')
         return redirect('jogo:sinuca')
     
+    # Supondo que exista um campo chamado chat_system na mesa
+    chat_system = getattr(mesa, 'chat_system', None)
+    
     context = {
         'mesa': mesa,
         'jogadores': mesa.jogadores.all(),
+        'chat_system': chat_system,
     }
     return render(request, 'jogo/jogar.html', context)
 

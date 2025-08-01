@@ -50,6 +50,7 @@ class MesaSinuca(models.Model):
     max_jogadores = models.IntegerField(default=2)
     criada_em = models.DateTimeField(auto_now_add=True)
     jogadores = models.ManyToManyField(User, blank=True, related_name='mesas_participando')
+    chat_system = models.UUIDField(blank=True, null=True, help_text='ID do sistema de chat no Supabase')
 
     def pode_entrar(self, user):
         """Verifica se o usuário pode entrar na mesa"""

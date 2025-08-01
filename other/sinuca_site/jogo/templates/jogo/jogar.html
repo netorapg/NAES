@@ -5,6 +5,94 @@
 
 {% block extra_css %}
 <style>
+    .game-chat-wrapper {
+        display: flex;
+        gap: 2rem;
+        align-items: flex-start;
+    }
+
+    .chat-panel {
+        width: 340px;
+        min-width: 220px;
+        max-width: 100%;
+        background: #23272b;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(44,62,80,0.3);
+        display: flex;
+        flex-direction: column;
+        height: 70vh;
+        margin: 0;
+    }
+    .chat-header {
+        background: #2c3e50;
+        color: #fff;
+        padding: 1rem;
+        border-radius: 10px 10px 0 0;
+        font-weight: bold;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .chat-messages {
+        flex: 1;
+        padding: 1rem;
+        overflow-y: auto;
+        color: #ecf0f1;
+        font-size: 0.98rem;
+        background: #23272b;
+        border-bottom: 1px solid #34495e;
+    }
+    .chat-message {
+        margin-bottom: 0.7rem;
+        word-break: break-word;
+    }
+    .chat-message .username {
+        color: #e74c3c;
+        font-weight: 600;
+        margin-right: 0.4em;
+    }
+    .chat-message .timestamp {
+        color: #7f8c8d;
+        font-size: 0.85em;
+        margin-left: 0.5em;
+    }
+    .chat-form {
+        display: flex;
+        gap: 0.5rem;
+        padding: 0.8rem 1rem;
+        background: #23272b;
+        border-radius: 0 0 10px 10px;
+    }
+    .chat-form .input {
+        flex: 1;
+        border-radius: 20px;
+        border: none;
+        padding: 0.6rem 1rem;
+        background: #34495e;
+        color: #fff;
+    }
+    .chat-form .input:focus {
+        outline: none;
+        background: #2c3e50;
+    }
+    .chat-form .button {
+        border-radius: 20px;
+        font-weight: 600;
+    }
+    @media screen and (max-width: 1100px) {
+        .game-chat-wrapper {
+            flex-direction: column;
+        }
+        .chat-panel {
+            width: 100%;
+            height: 300px;
+            margin-top: 1.5rem;
+        }
+        .game-container {
+            width: 100%;
+        }
+    }
     .game-section {
         flex: 1;
         padding: 1rem;
@@ -220,30 +308,44 @@
             {% endif %}
         </div>
 
-        <!-- Container do Jogo -->
-        <div class="game-container">
-            <div class="loading-overlay" id="loading-overlay">
-                <div class="loading-spinner"></div>
-                <p class="has-text-white title is-5">Carregando jogo...</p>
-                <p class="has-text-grey-light">Preparando a mesa de sinuca</p>
-            </div>
-            
-            <iframe 
-                src="{% static 'jogo/index.html' %}" 
-                class="game-iframe"
-                id="game-iframe"
-                onload="hideLoading()"
-                allow="autoplay; encrypted-media">
-                <div class="has-text-centered p-6">
-                    <p class="title is-4 has-text-white">
-                        <i class="fas fa-exclamation-triangle has-text-warning mr-2"></i>
-                        Seu navegador não suporta o jogo
-                    </p>
-                    <p class="has-text-grey-light">
-                        Por favor, utilize um navegador mais recente para jogar.
-                    </p>
+        <!-- Container do Jogo + Chat -->
+        <div class="game-chat-wrapper">
+            <div class="game-container">
+                <div class="loading-overlay" id="loading-overlay">
+                    <div class="loading-spinner"></div>
+                    <p class="has-text-white title is-5">Carregando jogo...</p>
+                    <p class="has-text-grey-light">Preparando a mesa de sinuca</p>
                 </div>
-            </iframe>
+                <iframe 
+                    src="{% static 'jogo/index.html' %}" 
+                    class="game-iframe"
+                    id="game-iframe"
+                    onload="hideLoading()"
+                    allow="autoplay; encrypted-media">
+                    <div class="has-text-centered p-6">
+                        <p class="title is-4 has-text-white">
+                            <i class="fas fa-exclamation-triangle has-text-warning mr-2"></i>
+                            Seu navegador não suporta o jogo
+                        </p>
+                        <p class="has-text-grey-light">
+                            Por favor, utilize um navegador mais recente para jogar.
+                        </p>
+                    </div>
+                </iframe>
+            </div>
+            <!-- Painel de Chat -->
+            <div class="chat-panel" id="chat-panel">
+                <div class="chat-header">
+                    <i class="fas fa-comments mr-2"></i> Chat da Mesa
+                </div>
+                <div class="chat-messages" id="chat-messages">
+                    <!-- Mensagens aparecerão aqui -->
+                </div>
+                <form class="chat-form" id="chat-form" autocomplete="off">
+                    <input type="text" id="chat-input" class="input" placeholder="Digite sua mensagem..." maxlength="200" required />
+                    <button type="submit" class="button is-primary">Enviar</button>
+                </form>
+            </div>
         </div>
 
         <!-- Controles do Jogo -->
@@ -284,7 +386,126 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+    // Integração Supabase Realtime para chat
+    const SUPABASE_URL = 'https://xzhxqnhzwklalgtvcvbi.supabase.co'; // Substitua pelo seu
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6aHhxbmh6d2tsYWxndHZjdmJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzOTc1NzQsImV4cCI6MjA2ODk3MzU3NH0.vAtuxG8FsgUluuzVflJpQcg3fcsEGj-ALkLrU-ZEgtM'; // Substitua pelo seu
+    // Inicializa o client do Supabase após o script ser carregado
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // IDs vindos do backend Django
+    const chatSystemId = '{{ mesa.chat_system }}';
+    const userId = '{{ user.id }}';
+    const username = '{{ user.username|default:"Você" }}';
+
+    const chatMessages = document.getElementById('chat-messages');
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+
+    // Checagem de chatSystemId
+    if (!chatSystemId || chatSystemId === 'None' || chatSystemId === '') {
+        alert('Erro: chatSystemId não definido. Não é possível carregar o chat.\nVerifique se a mesa possui um ID válido.');
+        // Opcional: desabilita o chat
+        if (chatForm) chatForm.querySelector('button[type="submit"]').disabled = true;
+    }
+
+    function formatTime(isoString) {
+        const date = new Date(isoString);
+        return date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }
+
+    function appendChatMessage(user, text, time) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'chat-message';
+        msgDiv.innerHTML = `<span class="username">${user}</span> ${text} <span class="timestamp">${time}</span>`;
+        chatMessages.appendChild(msgDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    async function loadMessages() {
+        if (!chatSystemId || chatSystemId === 'None' || chatSystemId === '') return;
+        const { data, error } = await supabaseClient
+            .from('protocolos_chatmessage')
+            .select('content, timestamp, sender:sender_id(username)')
+            .eq('chat_system_id', chatSystemId)
+            .order('timestamp', { ascending: true });
+        if (data) {
+            chatMessages.innerHTML = '';
+            data.forEach(msg => {
+                appendChatMessage(msg.sender?.username || 'Usuário', msg.content, formatTime(msg.timestamp));
+            });
+        }
+    }
+
+    // Escutar novas mensagens em tempo real
+    function subscribeToMessages() {
+        if (!chatSystemId || chatSystemId === 'None' || chatSystemId === '') return;
+        supabaseClient.channel('public:protocolos_chatmessage')
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'protocolos_chatmessage',
+                filter: `chat_system_id=eq.${chatSystemId}`
+            }, payload => {
+                const msg = payload.new;
+                appendChatMessage(usernameFromId(msg.sender_id), msg.content, formatTime(msg.timestamp));
+            })
+            .subscribe();
+    }
+
+    // Busca username pelo id (cache simples)
+    const userCache = {};
+    function usernameFromId(id) {
+        if (id === userId) return username;
+        if (userCache[id]) return userCache[id];
+        // fallback
+        return 'Usuário';
+    }
+
+    // Enviar mensagem para o Supabase
+    async function sendChatMessage(event) {
+        event.preventDefault();
+        if (!chatSystemId || chatSystemId === 'None' || chatSystemId === '') {
+            alert('Erro: chatSystemId não definido. Não é possível enviar mensagens.');
+            return;
+        }
+        const text = chatInput.value.trim();
+        if (!text) return;
+        // Log para depuração
+        console.log({ content: text, sender_id: userId, chat_system_id: chatSystemId });
+        const { data, error } = await supabaseClient.from('protocolos_chatmessage').insert([
+            {
+                id: generateUUID(),
+                content: text,
+                sender_id: userId,
+                chat_system_id: chatSystemId,
+                isPinned: false,
+                type_id: 1,
+            }
+        ]);
+        if (error) {
+            alert('Erro ao enviar mensagem: ' + error.message);
+            console.error(error);
+            return;
+        }
+        chatInput.value = '';
+    }
+
+    function generateUUID() {
+        // Gera um UUID v4 simples
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadMessages();
+        subscribeToMessages();
+        // Mensagem de boas-vindas local (opcional)
+        // appendChatMessage('Sistema', 'Bem-vindo ao chat da mesa!', new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+    });
     let isFullscreen = false;
     let soundEnabled = true;
 
@@ -408,5 +629,13 @@
 
     // Simulação de mudança de jogador a cada 30 segundos (apenas para demo)
     // setInterval(switchCurrentPlayer, 30000);
+    // Adiciona o event listener do chat apenas após o DOM estar pronto
+    document.addEventListener('DOMContentLoaded', function() {
+        loadMessages();
+        subscribeToMessages();
+        chatForm.addEventListener('submit', sendChatMessage);
+        // Mensagem de boas-vindas local (opcional)
+        // appendChatMessage('Sistema', 'Bem-vindo ao chat da mesa!', new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+    });
 </script>
 {% endblock %}
