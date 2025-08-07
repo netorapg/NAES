@@ -20,5 +20,6 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('__debug__/', include('debug_toolbar.urls', namespace='djdt')), # LINHA A SER ALTERADA
+    path('contas/', include('usuarios.urls')),
     path('', include('core.urls')),
 ]

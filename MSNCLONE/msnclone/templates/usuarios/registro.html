@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <h2>Crie sua Conta</h2>
+    <p>Preencha o formulário abaixo para se registrar.</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="bton bton-success mt-3">Registrar</button>
+    </form>
+{% endblock %}
