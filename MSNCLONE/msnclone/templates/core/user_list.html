@@ -6,7 +6,24 @@
     <div class="list-group">
         {% for user_obj in users %}
             <div class="list-group-item d-flex justify-content-between align-items-center">
-                {{ user_obj.username }} ({{ user_obj.first_name }} {{ user_obj.last_name}})
+                <div>
+                    <strong>{{ user_obj.username }}</strong>
+                    {% if user_obj.first_name or user_obj.last_name %}
+                        <span class="text-muted">({{ user_obj.first_name }} {{ user_obj.last_name }})</span>
+                    {% endif %}
+                    <br>
+                    <small>
+                        {% if user_obj.perfil.esta_online %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-circle"></i> Online
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary">
+                                <i class="fas fa-circle"></i> Offline
+                            </span>
+                        {% endif %}
+                    </small>
+                </div>
 
                 <form action="{% url 'core:adicionar-amigo' user_obj.pk %}" method="post">
                     {% csrf_token %}
@@ -15,4 +32,5 @@
 
             </div>
         {% endfor %}
+    </div>
 {% endblock %}

@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
+from datetime import timedelta
 
 # Create your models here.
 
@@ -17,12 +19,27 @@ class Status(models.Model):
 class Perfil(models.Model):
     # Um Perfil está associado a um único Usuário
     usuario = models.OneToOneField(User, on_delete=models.CASCADE)
-    # O status atual do usuário, relacionado à classe Status
-    status_atual = models.ForeignKey(Status, on_delete=models.SET_NULL, null=True, blank=True)
     frase = models.CharField(max_length=255, blank=True, null=True)
+    ultima_atividade = models.DateTimeField(default=timezone.now)
     
     def __str__(self):
         return self.usuario.username
+    
+    @property
+    def esta_online(self):
+        """Considera online se a última atividade foi nos últimos 5 minutos"""
+        agora = timezone.now()
+        limite = agora - timedelta(minutes=5)
+        return self.ultima_atividade > limite
+    
+    @property
+    def status_display(self):
+        return "Online" if self.esta_online else "Offline"
+    
+    def atualizar_atividade(self):
+        """Atualiza o timestamp da última atividade"""
+        self.ultima_atividade = timezone.now()
+        self.save(update_fields=['ultima_atividade'])
 
 
 class Contato(models.Model):
