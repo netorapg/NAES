@@ -20,41 +20,28 @@
                 
                 <!-- Área das mensagens -->
                 <div class="card-body p-0">
-                    <div class="chat-container" style="height: 400px; overflow-y: auto; padding: 15px; background-color: #f8f9fa;">
-                        {% if mensagens %}
-                            {% for mensagem in mensagens %}
-                                <div class="message mb-3 {% if mensagem.remetente == user %}text-end{% else %}text-start{% endif %}">
-                                    <div class="d-inline-block p-2 rounded {% if mensagem.remetente == user %}bg-primary text-white{% else %}bg-white border{% endif %}" 
-                                         style="max-width: 70%;">
-                                        <div class="message-content">
-                                            {{ mensagem.conteudo|linebreaks }}
-                                        </div>
-                                        <small class="message-time {% if mensagem.remetente == user %}text-white-50{% else %}text-muted{% endif %} d-block">
-                                            {% if mensagem.remetente != user %}{{ mensagem.remetente.username }} - {% endif %}
-                                            {{ mensagem.data_envio|date:"d/m/Y H:i" }}
-                                        </small>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <div class="text-center text-muted py-5">
+                    <div class="chat-container" id="chat-container" style="height: 400px; overflow-y: auto; padding: 15px; background-color: #f8f9fa;">
+                        <div id="mensagens-container">
+                            <div id="sem-mensagens" class="text-center text-muted py-5">
                                 <i class="fas fa-comments fa-3x mb-3"></i>
                                 <p>Nenhuma mensagem ainda. Inicie a conversa!</p>
                             </div>
-                        {% endif %}
+                        </div>
+                        <div id="loading" class="text-center text-muted py-3" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i> Carregando mensagens...
+                        </div>
                     </div>
                 </div>
                 
                 <!-- Formulário para enviar mensagem -->
                 <div class="card-footer">
-                    <form action="{% url 'core:enviar-mensagem' conversa.pk %}" method="post">
+                    <form id="chat-form">
                         {% csrf_token %}
                         <div class="input-group">
-                            <textarea name="conteudo" class="form-control" rows="2" 
+                            <textarea name="conteudo" id="mensagem-input" class="form-control" rows="2" 
                                       placeholder="Digite sua mensagem..." 
-                                      required maxlength="500"
-                                      onkeypress="if(event.keyCode == 13 && !event.shiftKey) { event.preventDefault(); this.form.submit(); }"></textarea>
-                            <button class="btn btn-primary" type="submit">
+                                      required maxlength="500"></textarea>
+                            <button class="btn btn-primary" type="submit" id="enviar-btn">
                                 <i class="fas fa-paper-plane"></i> Enviar
                             </button>
                         </div>
@@ -68,16 +55,132 @@
     </div>
     
     <script>
-        // Auto-scroll para a última mensagem
-        document.addEventListener('DOMContentLoaded', function() {
-            const chatContainer = document.querySelector('.chat-container');
+        // Variáveis globais
+        const conversaId = {{ conversa.pk }};
+        const userId = {{ user.id }};
+        let ultimaMensagemTimestamp = 0;
+        let chatContainer = document.getElementById('chat-container');
+        let mensagensContainer = document.getElementById('mensagens-container');
+        let chatForm = document.getElementById('chat-form');
+        let mensagemInput = document.getElementById('mensagem-input');
+        let enviarBtn = document.getElementById('enviar-btn');
+
+        // Função para scroll automático
+        function scrollToBottom() {
             chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Função para criar elemento de mensagem
+        function criarElementoMensagem(mensagem) {
+            const isMinhaMsg = mensagem.remetente_id === userId;
+            const alignClass = isMinhaMsg ? 'text-end' : 'text-start';
+            const bgClass = isMinhaMsg ? 'bg-primary text-white' : 'bg-white border';
+            const timeClass = isMinhaMsg ? 'text-white-50' : 'text-muted';
+            
+            return `
+                <div class="message mb-3 ${alignClass}">
+                    <div class="d-inline-block p-2 rounded ${bgClass}" style="max-width: 70%;">
+                        <div class="message-content">
+                            ${mensagem.conteudo.replace(/\n/g, '<br>')}
+                        </div>
+                        <small class="message-time ${timeClass} d-block">
+                            ${!isMinhaMsg ? mensagem.remetente + ' - ' : ''}
+                            ${mensagem.data_envio}
+                        </small>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Função para buscar novas mensagens
+        function buscarMensagens() {
+            fetch(`/buscar-mensagens/${conversaId}/?ultima_mensagem=${ultimaMensagemTimestamp}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.mensagens && data.mensagens.length > 0) {
+                        // Remover mensagem de "sem mensagens" se existir
+                        const semMensagens = document.getElementById('sem-mensagens');
+                        if (semMensagens) {
+                            semMensagens.remove();
+                        }
+                        
+                        data.mensagens.forEach(mensagem => {
+                            mensagensContainer.innerHTML += criarElementoMensagem(mensagem);
+                            ultimaMensagemTimestamp = Math.max(ultimaMensagemTimestamp, mensagem.timestamp);
+                        });
+                        scrollToBottom();
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar mensagens:', error);
+                });
+        }
+
+        // Função para enviar mensagem
+        function enviarMensagem(conteudo) {
+            const formData = new FormData();
+            formData.append('conteudo', conteudo);
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+            fetch(`/enviar-mensagem-ajax/${conversaId}/`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    // Remover mensagem de "sem mensagens" se existir
+                    const semMensagens = document.getElementById('sem-mensagens');
+                    if (semMensagens) {
+                        semMensagens.remove();
+                    }
+                    
+                    mensagensContainer.innerHTML += criarElementoMensagem(data.mensagem);
+                    ultimaMensagemTimestamp = Math.max(ultimaMensagemTimestamp, data.mensagem.timestamp);
+                    scrollToBottom();
+                    mensagemInput.value = '';
+                } else {
+                    alert('Erro ao enviar mensagem: ' + data.erro);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao enviar mensagem:', error);
+                alert('Erro ao enviar mensagem');
+            })
+            .finally(() => {
+                enviarBtn.disabled = false;
+                enviarBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar';
+            });
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Carregar mensagens iniciais
+            buscarMensagens();
+            
+            // Buscar novas mensagens a cada 2 segundos
+            setInterval(buscarMensagens, 2000);
+            
+            // Enviar mensagem ao submeter formulário
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const conteudo = mensagemInput.value.trim();
+                
+                if (conteudo) {
+                    enviarBtn.disabled = true;
+                    enviarBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+                    enviarMensagem(conteudo);
+                }
+            });
+            
+            // Enviar com Enter, quebra de linha com Shift+Enter
+            mensagemInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    chatForm.dispatchEvent(new Event('submit'));
+                }
+            });
         });
-        
-        // Auto-refresh da página a cada 5 segundos para simular tempo real
-        setTimeout(function() {
-            window.location.reload();
-        }, 5000);
     </script>
 
 {% endblock %}

@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db import models
 from django.db.models import Q
+from django.http import JsonResponse
 from .models import Contato, Status, Conversa, Mensagem
 
 class HomeView(TemplateView):
@@ -159,6 +160,71 @@ class EnviarMensagemView(LoginRequiredMixin, View):
             messages.success(request, 'Mensagem enviada!')
         
         return redirect('core:chat', conversa_id=conversa_id)
+
+
+class BuscarNovasMensagensView(LoginRequiredMixin, View):
+    def get(self, request, conversa_id):
+        conversa = get_object_or_404(Conversa, pk=conversa_id, participantes=request.user)
+        
+        # Pegar timestamp da última mensagem recebida pelo cliente
+        ultima_mensagem_timestamp = request.GET.get('ultima_mensagem', '0')
+        
+        try:
+            # Converter timestamp para datetime
+            from datetime import datetime
+            if ultima_mensagem_timestamp != '0':
+                ultima_data = datetime.fromtimestamp(float(ultima_mensagem_timestamp))
+                mensagens = conversa.mensagem_set.filter(data_envio__gt=ultima_data).order_by('data_envio')
+            else:
+                # Se for a primeira busca, pegar as últimas 20 mensagens
+                mensagens = conversa.mensagem_set.all().order_by('-data_envio')[:20]
+                mensagens = list(reversed(mensagens))
+        except:
+            mensagens = conversa.mensagem_set.all().order_by('data_envio')
+        
+        # Converter mensagens para JSON
+        mensagens_json = []
+        for msg in mensagens:
+            mensagens_json.append({
+                'id': msg.id,
+                'conteudo': msg.conteudo,
+                'remetente': msg.remetente.username,
+                'remetente_id': msg.remetente.id,
+                'data_envio': msg.data_envio.strftime('%d/%m/%Y %H:%M'),
+                'timestamp': msg.data_envio.timestamp()
+            })
+        
+        return JsonResponse({
+            'mensagens': mensagens_json,
+            'user_id': request.user.id
+        })
+
+
+class EnviarMensagemAjaxView(LoginRequiredMixin, View):
+    def post(self, request, conversa_id):
+        conversa = get_object_or_404(Conversa, pk=conversa_id, participantes=request.user)
+        conteudo = request.POST.get('conteudo', '').strip()
+        
+        if conteudo:
+            mensagem = Mensagem.objects.create(
+                conversa=conversa,
+                remetente=request.user,
+                conteudo=conteudo
+            )
+            
+            return JsonResponse({
+                'sucesso': True,
+                'mensagem': {
+                    'id': mensagem.id,
+                    'conteudo': mensagem.conteudo,
+                    'remetente': mensagem.remetente.username,
+                    'remetente_id': mensagem.remetente.id,
+                    'data_envio': mensagem.data_envio.strftime('%d/%m/%Y %H:%M'),
+                    'timestamp': mensagem.data_envio.timestamp()
+                }
+            })
+        
+        return JsonResponse({'sucesso': False, 'erro': 'Mensagem vazia'})
 
 
 #----------------------CRUD de Status----------------------#
