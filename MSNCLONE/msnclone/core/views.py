@@ -13,6 +13,12 @@ from .models import Contato, Status, Conversa, Mensagem, Perfil
 
 class HomeView(TemplateView):
     template_name = "core/home.html"
+
+class DocumentacaoView(TemplateView):
+    template_name = "core/documentacao.html"
+
+class PlantUMLCodigoView(TemplateView):
+    template_name = "core/plantuml_codigo.html"
     
 class EnviarPedidoAmizadeView(LoginRequiredMixin, View):
     def post(self, request, pk):

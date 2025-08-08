@@ -1,0 +1,339 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Documentação - MSN Clone{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2><i class="fas fa-book"></i> Documentação do Projeto - MSN Clone</h2>
+                    <p class="mb-0">Análise arquitetural completa do sistema de chat em tempo real</p>
+                </div>
+                <div class="card-body">
+                    <!-- Navegação por seções -->
+                    <nav class="mb-4">
+                        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                            <button class="nav-link active" id="nav-overview-tab" data-bs-toggle="tab" data-bs-target="#nav-overview" type="button" role="tab">
+                                <i class="fas fa-info-circle"></i> Visão Geral
+                            </button>
+                            <button class="nav-link" id="nav-usecase-tab" data-bs-toggle="tab" data-bs-target="#nav-usecase" type="button" role="tab">
+                                <i class="fas fa-users"></i> Casos de Uso
+                            </button>
+                            <button class="nav-link" id="nav-classes-tab" data-bs-toggle="tab" data-bs-target="#nav-classes" type="button" role="tab">
+                                <i class="fas fa-sitemap"></i> Classes
+                            </button>
+                            <button class="nav-link" id="nav-tech-tab" data-bs-toggle="tab" data-bs-target="#nav-tech" type="button" role="tab">
+                                <i class="fas fa-cogs"></i> Tecnologias
+                            </button>
+                            <a class="nav-link" href="{% url 'core:plantuml-codigo' %}">
+                                <i class="fas fa-code"></i> Código PlantUML
+                            </a>
+                        </div>
+                    </nav>
+
+                    <div class="tab-content" id="nav-tabContent">
+                        <!-- Visão Geral -->
+                        <div class="tab-pane fade show active" id="nav-overview" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h3>Sobre o Projeto</h3>
+                                    <p class="lead">O MSN Clone é uma aplicação web moderna que replica a funcionalidade clássica do MSN Messenger, implementando um sistema completo de mensageria instantânea com recursos avançados.</p>
+                                    
+                                    <h4>Funcionalidades Principais</h4>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item"><i class="fas fa-check-circle text-success"></i> Autenticação de usuários</li>
+                                                <li class="list-group-item"><i class="fas fa-check-circle text-success"></i> Sistema de amizades</li>
+                                                <li class="list-group-item"><i class="fas fa-check-circle text-success"></i> Chat em tempo real via AJAX</li>
+                                                <li class="list-group-item"><i class="fas fa-check-circle text-success"></i> Status online/offline</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item"><i class="fas fa-check-circle text-success"></i> Conversas privadas</li>
+                                                <li class="list-group-item"><i class="fas fa-check-circle text-success"></i> Interface responsiva</li>
+                                                <li class="list-group-item"><i class="fas fa-check-circle text-success"></i> Gerenciamento de contatos</li>
+                                                <li class="list-group-item"><i class="fas fa-check-circle text-success"></i> Middleware personalizado</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h5>Estatísticas do Projeto</h5>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <h3 class="text-primary">6</h3>
+                                                    <small>Models</small>
+                                                </div>
+                                                <div class="col-6">
+                                                    <h3 class="text-success">15+</h3>
+                                                    <small>Views</small>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col-6">
+                                                    <h3 class="text-warning">20+</h3>
+                                                    <small>Templates</small>
+                                                </div>
+                                                <div class="col-6">
+                                                    <h3 class="text-info">2</h3>
+                                                    <small>Apps</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Diagrama de Casos de Uso -->
+                        <div class="tab-pane fade" id="nav-usecase" role="tabpanel">
+                            <h3>Diagrama de Casos de Uso</h3>
+                            <p>Este diagrama mostra as principais funcionalidades do sistema e como os atores (usuários) interagem com elas.</p>
+                            
+                            <div class="text-center mb-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <img src="{% static 'core/diagramas/CasoDeUsoMSNClone.png' %}" alt="Diagrama de Casos de Uso - MSN Clone" class="img-fluid border rounded shadow-sm">
+                                        <p class="text-muted mt-3">
+                                            <i class="fas fa-info-circle"></i> 
+                                            Diagrama gerado automaticamente com PlantUML
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h4>Atores e Casos de Uso</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Atores:</h5>
+                                    <ul>
+                                        <li><strong>Usuário Não Autenticado:</strong> Visitante que pode se registrar ou fazer login</li>
+                                        <li><strong>Usuário Autenticado:</strong> Usuário logado com acesso completo ao sistema</li>
+                                        <li><strong>Sistema:</strong> Middleware que monitora atividades automaticamente</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5>Principais Casos de Uso:</h5>
+                                    <ul>
+                                        <li>Autenticar-se no Sistema</li>
+                                        <li>Gerenciar Amizades</li>
+                                        <li>Conversar em Tempo Real</li>
+                                        <li>Visualizar Status Online/Offline</li>
+                                        <li>Gerenciar Perfil</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Diagrama de Classes -->
+                        <div class="tab-pane fade" id="nav-classes" role="tabpanel">
+                            <h3>Diagrama de Classes</h3>
+                            <p>Este diagrama apresenta a arquitetura do sistema, mostrando as classes, seus atributos, métodos e relacionamentos.</p>
+                            
+                            <div class="text-center mb-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <img src="{% static 'core/diagramas/DiagramaClassesMSNClone.png' %}" alt="Diagrama de Classes - MSN Clone" class="img-fluid border rounded shadow-sm">
+                                        <p class="text-muted mt-3">
+                                            <i class="fas fa-info-circle"></i> 
+                                            Diagrama gerado automaticamente com PlantUML
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h4>Modelos Principais</h4>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="card">
+                                        <div class="card-header bg-primary text-white">
+                                            <h6>Perfil</h6>
+                                        </div>
+                                        <div class="card-body small">
+                                            <ul class="list-unstyled mb-0">
+                                                <li><strong>Relacionamentos:</strong></li>
+                                                <li>• OneToOne com User</li>
+                                                <li><strong>Funcionalidades:</strong></li>
+                                                <li>• Status online/offline</li>
+                                                <li>• Controle de atividade</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card">
+                                        <div class="card-header bg-success text-white">
+                                            <h6>Contato</h6>
+                                        </div>
+                                        <div class="card-body small">
+                                            <ul class="list-unstyled mb-0">
+                                                <li><strong>Relacionamentos:</strong></li>
+                                                <li>• ForeignKey com User (2x)</li>
+                                                <li><strong>Funcionalidades:</strong></li>
+                                                <li>• Gerenciar amizades</li>
+                                                <li>• Estados de solicitação</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card">
+                                        <div class="card-header bg-warning text-dark">
+                                            <h6>Conversa & Mensagem</h6>
+                                        </div>
+                                        <div class="card-body small">
+                                            <ul class="list-unstyled mb-0">
+                                                <li><strong>Relacionamentos:</strong></li>
+                                                <li>• ManyToMany User-Conversa</li>
+                                                <li>• ForeignKey Mensagem-Conversa</li>
+                                                <li><strong>Funcionalidades:</strong></li>
+                                                <li>• Chat em tempo real</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tecnologias -->
+                        <div class="tab-pane fade" id="nav-tech" role="tabpanel">
+                            <h3>Stack Tecnológico</h3>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h4>Backend</h4>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span><i class="fab fa-python text-success"></i> Django Framework</span>
+                                                    <span class="badge bg-success">5.x</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span><i class="fas fa-database text-primary"></i> SQLite Database</span>
+                                                    <span class="badge bg-primary">Built-in</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span><i class="fas fa-cogs text-warning"></i> Middleware Personalizado</span>
+                                                    <span class="badge bg-warning">Custom</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span><i class="fas fa-shield-alt text-danger"></i> Sistema de Autenticação</span>
+                                                    <span class="badge bg-danger">Django Auth</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <h4>Frontend</h4>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span><i class="fab fa-bootstrap text-primary"></i> Bootstrap</span>
+                                                    <span class="badge bg-primary">5.x</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span><i class="fab fa-js-square text-warning"></i> JavaScript/AJAX</span>
+                                                    <span class="badge bg-warning">ES6+</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span><i class="fas fa-icons text-info"></i> FontAwesome</span>
+                                                    <span class="badge bg-info">6.x</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span><i class="fas fa-mobile-alt text-success"></i> Design Responsivo</span>
+                                                    <span class="badge bg-success">✓</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <h4>Recursos Técnicos Implementados</h4>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="card border-primary">
+                                            <div class="card-header bg-primary text-white">
+                                                <i class="fas fa-bolt"></i> Tempo Real
+                                            </div>
+                                            <div class="card-body">
+                                                <ul class="small">
+                                                    <li>AJAX polling (2 segundos)</li>
+                                                    <li>Atualizações automáticas</li>
+                                                    <li>Interface não-bloqueante</li>
+                                                    <li>Indicadores de status</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card border-success">
+                                            <div class="card-header bg-success text-white">
+                                                <i class="fas fa-users"></i> Social
+                                            </div>
+                                            <div class="card-body">
+                                                <ul class="small">
+                                                    <li>Sistema de amizades</li>
+                                                    <li>Pedidos e aprovações</li>
+                                                    <li>Lista de contatos</li>
+                                                    <li>Perfis de usuário</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card border-warning">
+                                            <div class="card-header bg-warning text-dark">
+                                                <i class="fas fa-shield-alt"></i> Segurança
+                                            </div>
+                                            <div class="card-body">
+                                                <ul class="small">
+                                                    <li>Autenticação obrigatória</li>
+                                                    <li>CSRF Protection</li>
+                                                    <li>Validação de formulários</li>
+                                                    <li>Controle de acesso</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para PlantUML Online -->
+<div class="modal fade" id="plantumlModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Visualizar Diagrama Online</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Para visualizar os diagramas online, acesse:</p>
+                <a href="http://www.plantuml.com/plantuml/uml/" target="_blank" class="btn btn-primary">
+                    <i class="fas fa-external-link-alt"></i> PlantUML Online
+                </a>
+                <p class="mt-3">Depois copie e cole o conteúdo dos arquivos <code>.puml</code> no editor online.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

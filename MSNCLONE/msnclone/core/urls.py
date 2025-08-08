@@ -3,7 +3,7 @@ from django.urls import path
 from .views import (
     HomeView, UserListView, EnviarPedidoAmizadeView, MeusContatosView, ResponderPedidoAmizadeView,
     ListarConversasView, IniciarChatView, ChatView, EnviarMensagemView,
-    BuscarNovasMensagensView, EnviarMensagemAjaxView
+    BuscarNovasMensagensView, EnviarMensagemAjaxView, DocumentacaoView, PlantUMLCodigoView
 )
 app_name = 'core'
 
@@ -26,4 +26,8 @@ urlpatterns = [
     # URLs AJAX para chat em tempo real
     path('buscar-mensagens/<int:conversa_id>/', BuscarNovasMensagensView.as_view(), name='buscar-mensagens'),
     path('enviar-mensagem-ajax/<int:conversa_id>/', EnviarMensagemAjaxView.as_view(), name='enviar-mensagem-ajax'),
+    
+    # Documentação
+    path('documentacao/', DocumentacaoView.as_view(), name='documentacao'),
+    path('plantuml-codigo/', PlantUMLCodigoView.as_view(), name='plantuml-codigo'),
 ]

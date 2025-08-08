@@ -1,0 +1,168 @@
+@startuml DiagramaClassesMSNClone
+!theme plain
+skinparam backgroundColor white
+
+title Diagrama de Classes - MSN Clone
+
+' Django User (built-in)
+class User {
+    +id: Integer
+    +username: String
+    +email: String
+    +first_name: String
+    +last_name: String
+    +password: String
+    +is_active: Boolean
+    +date_joined: DateTime
+    --
+    +save()
+    +delete()
+}
+
+' Core Models
+class Perfil {
+    +id: Integer
+    +usuario: OneToOneField(User)
+    +frase: String
+    +ultima_atividade: DateTime
+    --
+    +esta_online(): Boolean
+    +status_display(): String
+    +atualizar_atividade(): void
+    +__str__(): String
+}
+
+class Status {
+    +id: Integer
+    +nome: String
+    --
+    +__str__(): String
+}
+
+class Contato {
+    +id: Integer
+    +solicitante: ForeignKey(User)
+    +receptor: ForeignKey(User)
+    +status: String
+    +data_solicitacao: DateTime
+    --
+    +STATUS_CHOICES: Tuple
+    +__str__(): String
+}
+
+class Conversa {
+    +id: Integer
+    +participantes: ManyToManyField(User)
+    +data_criacao: DateTime
+    --
+    +__str__(): String
+}
+
+class Mensagem {
+    +id: Integer
+    +conversa: ForeignKey(Conversa)
+    +remetente: ForeignKey(User)
+    +conteudo: TextField
+    +data_envio: DateTime
+    --
+    +__str__(): String
+}
+
+class Emoticon {
+    +id: Integer
+    +texto_atalho: String
+    +imagem_emoticon: ImageField
+    --
+    +__str__(): String
+}
+
+' Views Classes
+class HomeView {
+    +template_name: String
+    --
+    +get(): HttpResponse
+}
+
+class UserListView {
+    +model: User
+    +template_name: String
+    +context_object_name: String
+    --
+    +get_queryset(): QuerySet
+}
+
+class EnviarPedidoAmizadeView {
+    --
+    +post(request, pk): HttpResponse
+}
+
+class MeusContatosView {
+    +template_name: String
+    --
+    +get_context_data(**kwargs): Dict
+}
+
+class ResponderPedidoAmizadeView {
+    --
+    +post(request, pk): HttpResponse
+}
+
+class ChatView {
+    +template_name: String
+    --
+    +get_context_data(**kwargs): Dict
+}
+
+class BuscarNovasMensagensView {
+    --
+    +get(request, conversa_id): JsonResponse
+}
+
+class EnviarMensagemAjaxView {
+    --
+    +post(request, conversa_id): JsonResponse
+}
+
+' Middleware
+class UsuarioOnlineMiddleware {
+    +get_response: Callable
+    --
+    +__init__(get_response): void
+    +__call__(request): HttpResponse
+}
+
+' Forms
+class UsuarioCreationForm {
+    --
+    +save(): User
+}
+
+' Relacionamentos
+User ||--|| Perfil : "1:1"
+User ||--o{ Contato : "solicitante 1:N"
+User ||--o{ Contato : "receptor 1:N"
+User }o--o{ Conversa : "N:M participantes"
+User ||--o{ Mensagem : "remetente 1:N"
+Conversa ||--o{ Mensagem : "1:N"
+
+' Relacionamentos das Views com Models
+UserListView ..> User : "usa"
+UserListView ..> Perfil : "usa"
+EnviarPedidoAmizadeView ..> Contato : "cria"
+MeusContatosView ..> Contato : "consulta"
+ResponderPedidoAmizadeView ..> Contato : "atualiza"
+ChatView ..> Conversa : "consulta"
+ChatView ..> Mensagem : "consulta"
+BuscarNovasMensagensView ..> Mensagem : "consulta"
+EnviarMensagemAjaxView ..> Mensagem : "cria"
+
+' Middleware relationship
+UsuarioOnlineMiddleware ..> Perfil : "atualiza"
+
+' Notes
+note right of Perfil : "Propriedade esta_online\nverifica atividade nos\núltimos 5 minutos"
+note right of Contato : "Status: pendente,\naceito, recusado"
+note bottom of BuscarNovasMensagensView : "Retorna mensagens\nem formato JSON\npara AJAX"
+note bottom of UsuarioOnlineMiddleware : "Atualiza automaticamente\na última atividade\ndo usuário logado"
+
+@enduml

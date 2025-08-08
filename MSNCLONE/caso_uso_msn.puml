@@ -1,0 +1,69 @@
+@startuml CasoDeUsoMSNClone
+!theme plain
+skinparam backgroundColor white
+
+title Diagrama de Caso de Uso - MSN Clone
+
+left to right direction
+
+actor "Usuário Não Autenticado" as Guest
+actor "Usuário Autenticado" as User
+actor "Sistema" as System
+
+rectangle "MSN Clone System" {
+    ' Casos de uso para usuários não autenticados
+    usecase (Registrar-se) as UC1
+    usecase (Fazer Login) as UC2
+    
+    ' Casos de uso para usuários autenticados
+    usecase (Ver Status Online/Offline) as UC3
+    usecase (Buscar Usuários) as UC4
+    usecase (Enviar Pedido de Amizade) as UC5
+    usecase (Aceitar/Recusar Pedido) as UC6
+    usecase (Gerenciar Contatos) as UC7
+    usecase (Iniciar Conversa) as UC8
+    usecase (Enviar Mensagem) as UC9
+    usecase (Receber Mensagem em Tempo Real) as UC10
+    usecase (Ver Histórico de Conversas) as UC11
+    usecase (Ver Lista de Conversas) as UC12
+    usecase (Fazer Logout) as UC13
+    
+    ' Casos de uso do sistema
+    usecase (Atualizar Status Online) as UC14
+    usecase (Processar Mensagens AJAX) as UC15
+}
+
+' Relacionamentos Guest
+Guest --> UC1
+Guest --> UC2
+
+' Relacionamentos User
+User --> UC3
+User --> UC4
+User --> UC5
+User --> UC6
+User --> UC7
+User --> UC8
+User --> UC9
+User --> UC10
+User --> UC11
+User --> UC12
+User --> UC13
+
+' Relacionamentos System
+System --> UC14
+System --> UC15
+
+' Relacionamentos includes/extends
+UC7 ..> UC6 : <<include>>
+UC8 ..> UC7 : <<include>>
+UC9 ..> UC8 : <<include>>
+UC10 ..> UC9 : <<include>>
+UC3 ..> UC14 : <<include>>
+
+' Notas explicativas
+note right of UC10 : "Utiliza AJAX para\natualização em tempo real\na cada 2 segundos"
+note right of UC14 : "Middleware atualiza\nautomaticamente a\núltima atividade"
+note right of UC6 : "Pedidos podem ser\naceitos ou recusados"
+
+@enduml
