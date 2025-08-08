@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-comments"></i> 
+                            Chat com {{ outro_usuario.username }}
+                        </h5>
+                        <div>
+                            <a href="{% url 'core:conversas' %}" class="btn btn-light btn-sm">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Área das mensagens -->
+                <div class="card-body p-0">
+                    <div class="chat-container" style="height: 400px; overflow-y: auto; padding: 15px; background-color: #f8f9fa;">
+                        {% if mensagens %}
+                            {% for mensagem in mensagens %}
+                                <div class="message mb-3 {% if mensagem.remetente == user %}text-end{% else %}text-start{% endif %}">
+                                    <div class="d-inline-block p-2 rounded {% if mensagem.remetente == user %}bg-primary text-white{% else %}bg-white border{% endif %}" 
+                                         style="max-width: 70%;">
+                                        <div class="message-content">
+                                            {{ mensagem.conteudo|linebreaks }}
+                                        </div>
+                                        <small class="message-time {% if mensagem.remetente == user %}text-white-50{% else %}text-muted{% endif %} d-block">
+                                            {% if mensagem.remetente != user %}{{ mensagem.remetente.username }} - {% endif %}
+                                            {{ mensagem.data_envio|date:"d/m/Y H:i" }}
+                                        </small>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center text-muted py-5">
+                                <i class="fas fa-comments fa-3x mb-3"></i>
+                                <p>Nenhuma mensagem ainda. Inicie a conversa!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Formulário para enviar mensagem -->
+                <div class="card-footer">
+                    <form action="{% url 'core:enviar-mensagem' conversa.pk %}" method="post">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <textarea name="conteudo" class="form-control" rows="2" 
+                                      placeholder="Digite sua mensagem..." 
+                                      required maxlength="500"
+                                      onkeypress="if(event.keyCode == 13 && !event.shiftKey) { event.preventDefault(); this.form.submit(); }"></textarea>
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-paper-plane"></i> Enviar
+                            </button>
+                        </div>
+                        <small class="form-text text-muted mt-1">
+                            Pressione Enter para enviar, Shift+Enter para quebrar linha
+                        </small>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-scroll para a última mensagem
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatContainer = document.querySelector('.chat-container');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        });
+        
+        // Auto-refresh da página a cada 5 segundos para simular tempo real
+        setTimeout(function() {
+            window.location.reload();
+        }, 5000);
+    </script>
+
+{% endblock %}

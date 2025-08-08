@@ -2,7 +2,8 @@
 from django.urls import path
 from .views import (
     HomeView, StatusListView, StatusCreateView, StatusUpdateView, StatusDeleteView, 
-    UserListView, EnviarPedidoAmizadeView, MeusContatosView, ResponderPedidoAmizadeView
+    UserListView, EnviarPedidoAmizadeView, MeusContatosView, ResponderPedidoAmizadeView,
+    ListarConversasView, IniciarChatView, ChatView, EnviarMensagemView
 )
 app_name = 'core'
 
@@ -21,4 +22,10 @@ urlpatterns = [
     path('adicionar-amigo/<int:pk>/', EnviarPedidoAmizadeView.as_view(), name='adicionar-amigo'),
     path('meus-contatos/', MeusContatosView.as_view(), name='meus-contatos'),
     path('responder-pedido/<int:pk>/', ResponderPedidoAmizadeView.as_view(), name='responder-pedido'),
+    
+    # URLs do sistema de chat
+    path('conversas/', ListarConversasView.as_view(), name='conversas'),
+    path('iniciar-chat/<int:amigo_id>/', IniciarChatView.as_view(), name='iniciar-chat'),
+    path('chat/<int:conversa_id>/', ChatView.as_view(), name='chat'),
+    path('enviar-mensagem/<int:conversa_id>/', EnviarMensagemView.as_view(), name='enviar-mensagem'),
 ]

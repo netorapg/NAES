@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db import models
 from django.db.models import Q
-from .models import Contato, Status
+from .models import Contato, Status, Conversa, Mensagem
 
 class HomeView(TemplateView):
     template_name = "core/home.html"
@@ -91,6 +91,74 @@ class ResponderPedidoAmizadeView(LoginRequiredMixin, View):
             messages.info(request, f'Você recusou o pedido de {contato.solicitante.username}.')
         
         return redirect('core:meus-contatos')
+
+
+class ListarConversasView(LoginRequiredMixin, ListView):
+    template_name = 'core/conversas_list.html'
+    context_object_name = 'conversas'
+    
+    def get_queryset(self):
+        return Conversa.objects.filter(participantes=self.request.user).order_by('-data_criacao')
+
+
+class IniciarChatView(LoginRequiredMixin, View):
+    def get(self, request, amigo_id):
+        amigo = get_object_or_404(User, pk=amigo_id)
+        
+        # Verificar se são amigos
+        amizade_existe = Contato.objects.filter(
+            Q(solicitante=request.user, receptor=amigo, status='aceito') |
+            Q(solicitante=amigo, receptor=request.user, status='aceito')
+        ).exists()
+        
+        if not amizade_existe:
+            messages.error(request, 'Você só pode conversar com seus amigos!')
+            return redirect('core:meus-contatos')
+        
+        # Buscar conversa existente ou criar nova
+        conversa = Conversa.objects.filter(participantes__in=[request.user]).\
+                   filter(participantes__in=[amigo]).first()
+        
+        if not conversa:
+            conversa = Conversa.objects.create()
+            conversa.participantes.add(request.user, amigo)
+        
+        return redirect('core:chat', conversa_id=conversa.pk)
+
+
+class ChatView(LoginRequiredMixin, TemplateView):
+    template_name = 'core/chat.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        conversa_id = self.kwargs['conversa_id']
+        
+        conversa = get_object_or_404(Conversa, pk=conversa_id, participantes=self.request.user)
+        
+        # Pegar o outro participante
+        outro_usuario = conversa.participantes.exclude(pk=self.request.user.pk).first()
+        
+        context['conversa'] = conversa
+        context['outro_usuario'] = outro_usuario
+        context['mensagens'] = conversa.mensagem_set.all().order_by('data_envio')
+        
+        return context
+
+
+class EnviarMensagemView(LoginRequiredMixin, View):
+    def post(self, request, conversa_id):
+        conversa = get_object_or_404(Conversa, pk=conversa_id, participantes=request.user)
+        conteudo = request.POST.get('conteudo', '').strip()
+        
+        if conteudo:
+            Mensagem.objects.create(
+                conversa=conversa,
+                remetente=request.user,
+                conteudo=conteudo
+            )
+            messages.success(request, 'Mensagem enviada!')
+        
+        return redirect('core:chat', conversa_id=conversa_id)
 
 
 #----------------------CRUD de Status----------------------#
