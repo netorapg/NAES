@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Meus Contatos</h2>
+    
+    <!-- Pedidos Recebidos -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Pedidos Recebidos</h4>
+        </div>
+        <div class="card-body">
+            {% if pedidos_recebidos %}
+                <div class="list-group">
+                    {% for pedido in pedidos_recebidos %}
+                        {% if pedido.status == 'pendente' %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ pedido.solicitante.username }} quer ser seu amigo</span>
+                                <div>
+                                    <form action="{% url 'core:responder-pedido' pedido.pk %}" method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="acao" value="aceitar">
+                                        <button type="submit" class="btn btn-success btn-sm">Aceitar</button>
+                                    </form>
+                                    <form action="{% url 'core:responder-pedido' pedido.pk %}" method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="acao" value="recusar">
+                                        <button type="submit" class="btn btn-danger btn-sm">Recusar</button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">Nenhum pedido pendente.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Pedidos Enviados -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Pedidos Enviados</h4>
+        </div>
+        <div class="card-body">
+            {% if pedidos_enviados %}
+                <div class="list-group">
+                    {% for pedido in pedidos_enviados %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Pedido para {{ pedido.receptor.username }}</span>
+                            <span class="badge badge-{% if pedido.status == 'aceito' %}success{% elif pedido.status == 'pendente' %}warning{% else %}danger{% endif %}">
+                                {{ pedido.get_status_display }}
+                            </span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">Você não enviou nenhum pedido.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Lista de Amigos -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Meus Amigos</h4>
+        </div>
+        <div class="card-body">
+            {% if amigos %}
+                <div class="list-group">
+                    {% for amizade in amigos %}
+                        <div class="list-group-item">
+                            {% if amizade.solicitante == user %}
+                                <i class="fas fa-user-friends"></i> {{ amizade.receptor.username }}
+                            {% else %}
+                                <i class="fas fa-user-friends"></i> {{ amizade.solicitante.username }}
+                            {% endif %}
+                            <small class="text-muted">(amigos desde {{ amizade.data_solicitacao|date:"d/m/Y" }})</small>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">Você ainda não tem amigos. <a href="{% url 'core:user-list' %}">Encontre alguns aqui!</a></p>
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

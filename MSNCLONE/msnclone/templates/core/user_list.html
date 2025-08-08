@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Encontrar Amigos</h2>
+    <p>Veja outros usuários cadastrados no sistema.</p>
+    <div class="list-group">
+        {% for user_obj in users %}
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                {{ user_obj.username }} ({{ user_obj.first_name }} {{ user_obj.last_name}})
+
+                <form action="{% url 'core:adicionar-amigo' user_obj.pk %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-sm">Adicionar</button>
+                </form>
+
+            </div>
+        {% endfor %}
+{% endblock %}

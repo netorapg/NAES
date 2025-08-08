@@ -11,6 +11,14 @@
    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
         <a class="navbar-brand" href="{% url 'core:home' %}">MSN Clone</a>
+        
+        {% if user.is_authenticated %}
+        <div class="navbar-nav me-auto">
+            <a class="nav-link" href="{% url 'core:user-list' %}">Encontrar Amigos</a>
+            <a class="nav-link" href="{% url 'core:meus-contatos' %}">Meus Contatos</a>
+        </div>
+        {% endif %}
+        
         <div class="d-flex">
             <ul class="navbar-nav">
                 {% if user.is_authenticated %}
@@ -36,6 +44,16 @@
 </nav>
 
     <main class="container mt-4">
+        <!-- Mensagens do Django -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% elif message.tags == 'info' %}info{% else %}warning{% endif %} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
         {% block content %}
         {% endblock %}
     </main>

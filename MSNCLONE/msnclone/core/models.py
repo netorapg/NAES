@@ -26,16 +26,21 @@ class Perfil(models.Model):
 
 
 class Contato(models.Model):
-    # O usuário que adiciona o contato
-    usuario_principal = models.ForeignKey(User, related_name='contatos_adicionados', on_delete=models.CASCADE)
-    # O amigo que foi adicionado
-    amigo = models.ForeignKey(User, related_name='amigos_de', on_delete=models.CASCADE)
-    data_amizade = models.DateTimeField(auto_now_add=True)
+    STATUS_CHOICES = (
+        ('pendente', 'Pendente'),
+        ('aceito', 'Aceito'),
+        ('recusado', 'Recusado'),
+    )
+    
+    solicitante = models.ForeignKey(User, related_name='pedidos_enviados', on_delete=models.CASCADE)
+    receptor = models.ForeignKey(User, related_name='pedidos_recebidos', on_delete=models.CASCADE)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pendente')
+    data_solicitacao = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.usuario_principal.username} -> {self.amigo.username}"
-
-
+        return f"{self.solicitante} -> {self.receptor} ({self.status})"
+    
+    
 class Conversa(models.Model):
     # Usuários que participam da conversa
     participantes = models.ManyToManyField(User, related_name='conversas')
