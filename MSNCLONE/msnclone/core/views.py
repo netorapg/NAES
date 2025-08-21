@@ -10,6 +10,8 @@ from django.db import models
 from django.db.models import Q
 from django.http import JsonResponse
 from .models import Contato, Status, Conversa, Mensagem, Perfil
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 class HomeView(TemplateView):
     template_name = "core/home.html"
@@ -235,5 +237,35 @@ class EnviarMensagemAjaxView(LoginRequiredMixin, View):
             })
         
         return JsonResponse({'sucesso': False, 'erro': 'Mensagem vazia'})
-    
+
+@login_required
+def excluir_amigo(request, contato_id):
+    contato = get_object_or_404(Contato, id=contato_id)
+    if (contato.solicitante == request.user or contato.receptor == request.user) and contato.status == 'aceito':
+        contato.delete()
+        messages.success(request, "Amizade excluída com sucesso.")
+    else:
+        messages.error(request, "Você não pode excluir esta amizade.")
+    return redirect('core:meus-contatos')
+
+@login_required
+def bloquear_amigo(request, contato_id):
+    contato = get_object_or_404(Contato, id=contato_id)
+    if request.user in [contato.solicitante, contato.receptor]:
+        contato.bloqueado_por.add(request.user)
+        messages.success(request, "Usuário bloqueado.")
+    else:
+        messages.error(request, "Você não pode bloquear este usuário.")
+    return redirect('core:meus-contatos')
+
+@login_required
+def desbloquear_amigo(request, contato_id):
+    contato = get_object_or_404(Contato, id=contato_id)
+    if request.user in contato.bloqueado_por.all():
+        contato.bloqueado_por.remove(request.user)
+        messages.success(request, "Usuário desbloqueado.")
+    else:
+        messages.error(request, "Você não pode desbloquear este usuário.")
+    return redirect('core:meus-contatos')
+
 

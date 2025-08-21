@@ -5,6 +5,8 @@ from .views import (
     ListarConversasView, IniciarChatView, ChatView, EnviarMensagemView,
     BuscarNovasMensagensView, EnviarMensagemAjaxView, DocumentacaoView, PlantUMLCodigoView
 )
+from . import views
+
 app_name = 'core'
 
 urlpatterns = [
@@ -16,7 +18,9 @@ urlpatterns = [
     path('adicionar-amigo/<int:pk>/', EnviarPedidoAmizadeView.as_view(), name='adicionar-amigo'),
     path('meus-contatos/', MeusContatosView.as_view(), name='meus-contatos'),
     path('responder-pedido/<int:pk>/', ResponderPedidoAmizadeView.as_view(), name='responder-pedido'),
-    
+    path('excluir-amigo/<int:contato_id>/', views.excluir_amigo, name='excluir-amigo'),
+    path('bloquear-amigo/<int:contato_id>/', views.bloquear_amigo, name='bloquear-amigo'),
+    path('desbloquear-amigo/<int:contato_id>/', views.desbloquear_amigo, name='desbloquear-amigo'),
     # URLs do sistema de chat
     path('conversas/', ListarConversasView.as_view(), name='conversas'),
     path('iniciar-chat/<int:amigo_id>/', IniciarChatView.as_view(), name='iniciar-chat'),

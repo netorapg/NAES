@@ -1,7 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
+
 
 # Create your models here.
 
@@ -53,6 +55,7 @@ class Contato(models.Model):
     receptor = models.ForeignKey(User, related_name='pedidos_recebidos', on_delete=models.CASCADE)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pendente')
     data_solicitacao = models.DateTimeField(auto_now_add=True)
+    bloqueado_por = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='bloqueios')
 
     def __str__(self):
         return f"{self.solicitante} -> {self.receptor} ({self.status})"
