@@ -128,6 +128,15 @@ class IniciarChatView(LoginRequiredMixin, View):
             messages.error(request, 'Você só pode conversar com seus amigos!')
             return redirect('core:meus-contatos')
         
+        contato = Contato.objects.filter(
+            Q(solicitante=request.user, receptor=amigo, status='aceito') |
+            Q(solicitante=amigo, receptor=request.user, status='aceito')
+        ).first()
+        
+        if contato and amigo in contato.bloqueado_por.all():
+            messages.error(request, "Você não pode iniciar um chat com este usuário.")
+            return redirect('core:meus-contatos')
+        
         # Buscar conversa existente ou criar nova
         conversa = Conversa.objects.filter(participantes__in=[request.user]).\
                    filter(participantes__in=[amigo]).first()
