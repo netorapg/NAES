@@ -277,4 +277,78 @@ def desbloquear_amigo(request, contato_id):
         messages.error(request, "Você não pode desbloquear este usuário.")
     return redirect('core:meus-contatos')
 
+@login_required
+def editar_mensagem(request, mensagem_id):
+    mensagem = get_object_or_404(Mensagem, id=mensagem_id, remetente=request.user)
+    
+    if request.method == 'POST':
+        novo_conteudo = request.POST.get('conteudo', '').strip()
+        if novo_conteudo:
+            mensagem.conteudo = novo_conteudo
+            mensagem.save()
+            messages.success(request, "Mensagem editada com sucesso.")
+        else:
+            messages.error(request, "A mensagem não pode ficar vazia.")
+        
+        return redirect('core:chat', conversa_id=mensagem.conversa.id)
+    
+    # GET request - renderizar formulário de edição
+    context = {
+        'mensagem': mensagem,
+        'conversa': mensagem.conversa
+    }
+    return render(request, 'core/editar_mensagem.html', context)
+
+@login_required
+def excluir_mensagem(request, mensagem_id):
+    mensagem = get_object_or_404(Mensagem, id=mensagem_id, remetente=request.user)
+    conversa_id = mensagem.conversa.id
+    
+    if request.method == 'POST':
+        mensagem.delete()
+        messages.success(request, "Mensagem excluída com sucesso.")
+        return redirect('core:chat', conversa_id=conversa_id)
+    
+    # GET request - renderizar página de confirmação
+    context = {
+        'mensagem': mensagem,
+        'conversa': mensagem.conversa
+    }
+    return render(request, 'core/confirmar_exclusao_mensagem.html', context)
+
+# AJAX para editar mensagem
+@login_required
+def editar_mensagem_ajax(request, mensagem_id):
+    if request.method == 'POST':
+        mensagem = get_object_or_404(Mensagem, id=mensagem_id, remetente=request.user)
+        novo_conteudo = request.POST.get('conteudo', '').strip()
+        
+        if novo_conteudo:
+            mensagem.conteudo = novo_conteudo
+            mensagem.save()
+            
+            return JsonResponse({
+                'sucesso': True,
+                'mensagem': {
+                    'id': mensagem.id,
+                    'conteudo': mensagem.conteudo,
+                    'data_envio': mensagem.data_envio.strftime('%d/%m/%Y %H:%M'),
+                }
+            })
+        else:
+            return JsonResponse({'sucesso': False, 'erro': 'Mensagem não pode ficar vazia'})
+    
+    return JsonResponse({'sucesso': False, 'erro': 'Método não permitido'})
+
+# AJAX para excluir mensagem
+@login_required
+def excluir_mensagem_ajax(request, mensagem_id):
+    if request.method == 'POST':
+        mensagem = get_object_or_404(Mensagem, id=mensagem_id, remetente=request.user)
+        mensagem.delete()
+        
+        return JsonResponse({'sucesso': True})
+    
+    return JsonResponse({'sucesso': False, 'erro': 'Método não permitido'})
+
 

@@ -34,4 +34,12 @@ urlpatterns = [
     # Documentação
     path('documentacao/', DocumentacaoView.as_view(), name='documentacao'),
     path('plantuml-codigo/', PlantUMLCodigoView.as_view(), name='plantuml-codigo'),
+    
+    # URLs para editar e excluir mensagens
+    path('editar-mensagem/<int:mensagem_id>/', views.editar_mensagem, name='editar-mensagem'),
+    path('excluir-mensagem/<int:mensagem_id>/', views.excluir_mensagem, name='excluir-mensagem'),
+    
+    # URLs AJAX para editar e excluir mensagens
+    path('editar-mensagem-ajax/<int:mensagem_id>/', views.editar_mensagem_ajax, name='editar-mensagem-ajax'),
+    path('excluir-mensagem-ajax/<int:mensagem_id>/', views.excluir_mensagem_ajax, name='excluir-mensagem-ajax'),
 ]

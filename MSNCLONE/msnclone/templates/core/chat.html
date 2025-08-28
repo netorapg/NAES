@@ -62,7 +62,37 @@
             </div>
         </div>
     </div>
-    
+
+    <style>
+        .message {
+            position: relative;
+        }
+        
+        .message-actions {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            background: rgba(0,0,0,0.7);
+            border-radius: 5px;
+            padding: 2px;
+        }
+        
+        .message:hover .message-actions {
+            opacity: 1;
+        }
+        
+        .message-actions .btn {
+            padding: 2px 6px;
+            margin: 0 1px;
+        }
+
+        .edit-form {
+            margin-top: 10px;
+        }
+    </style>
+
     <script>
         // Variáveis globais
         const conversaId = {{ conversa.pk }};
@@ -86,9 +116,22 @@
             const bgClass = isMinhaMsg ? 'bg-primary text-white' : 'bg-white border';
             const timeClass = isMinhaMsg ? 'text-white-50' : 'text-muted';
             
+            // Botões de ação apenas para mensagens próprias
+            const actionsHtml = isMinhaMsg ? `
+                <div class="message-actions">
+                    <button class="btn btn-sm btn-light edit-message" data-message-id="${mensagem.id}" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger delete-message" data-message-id="${mensagem.id}" title="Excluir">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            ` : '';
+            
             return `
-                <div class="message mb-3 ${alignClass}">
-                    <div class="d-inline-block p-2 rounded ${bgClass}" style="max-width: 70%;">
+                <div class="message mb-3 ${alignClass}" data-message-id="${mensagem.id}">
+                    <div class="d-inline-block p-2 rounded ${bgClass}" style="max-width: 70%; position: relative;">
+                        ${actionsHtml}
                         <div class="message-content">
                             ${mensagem.conteudo.replace(/\n/g, '<br>')}
                         </div>
@@ -162,7 +205,118 @@
             });
         }
 
-        // Event listeners
+        // Função para editar mensagem
+        function editarMensagem(messageId) {
+            const messageDiv = document.querySelector(`[data-message-id="${messageId}"]`);
+            const contentDiv = messageDiv.querySelector('.message-content');
+            const currentContent = contentDiv.textContent;
+            
+            // Criar formulário de edição
+            const editForm = document.createElement('div');
+            editForm.className = 'edit-form';
+            editForm.innerHTML = `
+                <div class="input-group">
+                    <input type="text" class="form-control form-control-sm edit-input" value="${currentContent}" required>
+                    <button type="button" class="btn btn-success btn-sm" onclick="salvarEdicao('${messageId}')">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="cancelarEdicao('${messageId}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            contentDiv.style.display = 'none';
+            messageDiv.querySelector('.message-actions').style.display = 'none';
+            messageDiv.querySelector('.d-inline-block').appendChild(editForm);
+            
+            // Focus no input
+            editForm.querySelector('.edit-input').focus();
+        }
+
+        // Função para salvar edição
+        function salvarEdicao(messageId) {
+            const messageDiv = document.querySelector(`[data-message-id="${messageId}"]`);
+            const editForm = messageDiv.querySelector('.edit-form');
+            const newContent = editForm.querySelector('.edit-input').value;
+            
+            if (newContent.trim()) {
+                const formData = new FormData();
+                formData.append('conteudo', newContent);
+                formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+                
+                fetch(`/editar-mensagem-ajax/${messageId}/`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso) {
+                        const contentDiv = messageDiv.querySelector('.message-content');
+                        contentDiv.innerHTML = data.mensagem.conteudo.replace(/\n/g, '<br>');
+                        contentDiv.style.display = 'block';
+                        messageDiv.querySelector('.message-actions').style.display = 'block';
+                        editForm.remove();
+                    } else {
+                        alert('Erro: ' + data.erro);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao editar mensagem:', error);
+                    alert('Erro ao editar mensagem');
+                });
+            }
+        }
+
+        // Função para cancelar edição
+        function cancelarEdicao(messageId) {
+            const messageDiv = document.querySelector(`[data-message-id="${messageId}"]`);
+            const editForm = messageDiv.querySelector('.edit-form');
+            messageDiv.querySelector('.message-content').style.display = 'block';
+            messageDiv.querySelector('.message-actions').style.display = 'block';
+            editForm.remove();
+        }
+
+        // Função para excluir mensagem
+        function excluirMensagem(messageId) {
+            if (confirm('Tem certeza que deseja excluir esta mensagem?')) {
+                const formData = new FormData();
+                formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+                
+                fetch(`/excluir-mensagem-ajax/${messageId}/`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso) {
+                        const messageDiv = document.querySelector(`[data-message-id="${messageId}"]`);
+                        messageDiv.remove();
+                    } else {
+                        alert('Erro: ' + data.erro);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao excluir mensagem:', error);
+                    alert('Erro ao excluir mensagem');
+                });
+            }
+        }
+
+        // Event delegation para botões dinâmicos
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.edit-message')) {
+                const messageId = e.target.closest('.edit-message').dataset.messageId;
+                editarMensagem(messageId);
+            }
+            
+            if (e.target.closest('.delete-message')) {
+                const messageId = e.target.closest('.delete-message').dataset.messageId;
+                excluirMensagem(messageId);
+            }
+        });
+
+        // Event listeners principais
         document.addEventListener('DOMContentLoaded', function() {
             // Carregar mensagens iniciais
             buscarMensagens();

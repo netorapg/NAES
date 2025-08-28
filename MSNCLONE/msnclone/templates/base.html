@@ -32,7 +32,10 @@
                         </span>
                     </li>
                     <li class="nav-item">
-                        <a class="btn btn-outline-light" href="{% url 'usuarios:logout' %}">Sair</a>
+                        <form method="post" action="{% url 'usuarios:logout' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-light">Sair</button>
+                        </form>
                     </li>
                 {% else %}
                     <li class="nav-item me-2">

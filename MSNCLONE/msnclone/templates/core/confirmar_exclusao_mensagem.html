@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h4>Confirmar Exclusão</h4>
+        </div>
+        <div class="card-body">
+            <p>Tem certeza que deseja excluir esta mensagem?</p>
+            <div class="alert alert-light">
+                <strong>Mensagem:</strong> {{ mensagem.conteudo }}
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Sim, excluir</button>
+                <a href="{% url 'core:chat' conversa.id %}" class="btn btn-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -11,5 +11,7 @@ urlpatterns = [
         template_name='usuarios/login.html'
     ), name='login'),
 
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('logout/', auth_views.LogoutView.as_view(
+        http_method_names=['get', 'post']
+    ), name='logout'),
 ]
