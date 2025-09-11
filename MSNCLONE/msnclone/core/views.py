@@ -12,6 +12,7 @@ from django.http import JsonResponse
 from .models import Contato, Status, Conversa, Mensagem, Perfil
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from .filters import UserFilter
 
 class HomeView(TemplateView):
     template_name = "core/home.html"
@@ -55,14 +56,19 @@ class UserListView(LoginRequiredMixin, ListView):
     model = User
     template_name = 'core/user_list.html'
     context_object_name = 'users'
+    filterset_class = UserFilter
     
     def get_queryset(self):
-        users = User.objects.exclude(id=self.request.user.id)
-        # Garantir que todos os usuários tenham um perfil
-        for user in users:
-            Perfil.objects.get_or_create(usuario=user)
-        return users
-
+        queryset = super().get_queryset().exclude(id=self.request.user.id)
+        
+        self.filterset = self.filterset_class(self.request.GET, queryset=queryset)
+        
+        return self.filterset.qs
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filter'] = self.filterset
+        return context
 
 class MeusContatosView(LoginRequiredMixin, TemplateView):
     template_name = 'core/meus_contatos.html'
