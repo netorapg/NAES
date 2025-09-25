@@ -7,6 +7,13 @@
     <form method="post">
         {% csrf_token %}
         {{ form|crispy }}
-        <button type="submit" class="bton bton-success mt-3">Registrar</button>
+        <button type="submit" class="btn btn-success mt-3">Registrar</button>
     </form>
-{% endblock %}
+    {% endblock %}
+    {% block scripts %}
+    <script>
+        $(document).ready(function(){
+            $('#id_telefone').mask('(00) 00000-0000');
+        });
+    </script>
+    {% endblock %}
