@@ -57,9 +57,11 @@ class UserListView(LoginRequiredMixin, ListView):
     template_name = 'core/user_list.html'
     context_object_name = 'users'
     filterset_class = UserFilter
+    paginate_by = 10  # ADICIONAR PAGINAÇÃO - 10 usuários por página
     
     def get_queryset(self):
-        queryset = super().get_queryset().exclude(id=self.request.user.id)
+        # OTIMIZADO: select_related para perfis se necessário
+        queryset = User.objects.exclude(id=self.request.user.id).select_related('perfil')
         
         self.filterset = self.filterset_class(self.request.GET, queryset=queryset)
         
@@ -77,20 +79,18 @@ class MeusContatosView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         
-        # Pedidos enviados pelo usuário atual
-        context['pedidos_enviados'] = Contato.objects.filter(solicitante=user)
+        # OTIMIZADO: select_related evita N+1 queries
+        # Cada contato já vem com os dados do receptor e solicitante carregados
+        context['pedidos_enviados'] = Contato.objects.select_related('receptor', 'solicitante').filter(solicitante=user)
         
-        # Pedidos recebidos pelo usuário atual
-        context['pedidos_recebidos'] = Contato.objects.filter(receptor=user)
+        context['pedidos_recebidos'] = Contato.objects.select_related('receptor', 'solicitante').filter(receptor=user)
         
-        # Amigos aceitos (onde o usuário é solicitante ou receptor)
-        context['amigos'] = Contato.objects.filter(
+        context['amigos'] = Contato.objects.select_related('receptor', 'solicitante').filter(
             Q(solicitante=user) | Q(receptor=user),
             status='aceito'
         )
         
         return context
-
 
 class ResponderPedidoAmizadeView(LoginRequiredMixin, View):
     def post(self, request, pk):
@@ -115,10 +115,13 @@ class ResponderPedidoAmizadeView(LoginRequiredMixin, View):
 class ListarConversasView(LoginRequiredMixin, ListView):
     template_name = 'core/conversas_list.html'
     context_object_name = 'conversas'
+    paginate_by = 5  # ADICIONAR PAGINAÇÃO - 5 conversas por página
     
     def get_queryset(self):
-        return Conversa.objects.filter(participantes=self.request.user).order_by('-data_criacao')
-
+        # OTIMIZADO: prefetch_related para participantes
+        return Conversa.objects.prefetch_related('participantes').filter(
+            participantes=self.request.user
+        ).order_by('-data_criacao')
 
 class IniciarChatView(LoginRequiredMixin, View):
     def get(self, request, amigo_id):
@@ -161,14 +164,21 @@ class ChatView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         conversa_id = self.kwargs['conversa_id']
         
-        conversa = get_object_or_404(Conversa, pk=conversa_id, participantes=self.request.user)
+        # OTIMIZADO: select_related para evitar queries nas mensagens
+        conversa = get_object_or_404(
+            Conversa.objects.prefetch_related('participantes'), 
+            pk=conversa_id, 
+            participantes=self.request.user
+        )
         
         # Pegar o outro participante
         outro_usuario = conversa.participantes.exclude(pk=self.request.user.pk).first()
         
         context['conversa'] = conversa
         context['outro_usuario'] = outro_usuario
-        context['mensagens'] = conversa.mensagem_set.all().order_by('data_envio')
+        
+        # CRÍTICO: select_related('remetente') evita 1 query por mensagem!
+        context['mensagens'] = conversa.mensagem_set.select_related('remetente').all().order_by('data_envio')
         
         return context
 
@@ -193,37 +203,31 @@ class BuscarNovasMensagensView(LoginRequiredMixin, View):
     def get(self, request, conversa_id):
         conversa = get_object_or_404(Conversa, pk=conversa_id, participantes=request.user)
         
-        # Pegar timestamp da última mensagem recebida pelo cliente
-        ultima_mensagem_timestamp = request.GET.get('ultima_mensagem', '0')
-        
         try:
-            # Converter timestamp para datetime
-            from datetime import datetime
-            if ultima_mensagem_timestamp != '0':
-                ultima_data = datetime.fromtimestamp(float(ultima_mensagem_timestamp))
-                mensagens = conversa.mensagem_set.filter(data_envio__gt=ultima_data).order_by('data_envio')
-            else:
-                # Se for a primeira busca, pegar as últimas 20 mensagens
-                mensagens = conversa.mensagem_set.all().order_by('-data_envio')[:20]
-                mensagens = list(reversed(mensagens))
-        except:
-            mensagens = conversa.mensagem_set.all().order_by('data_envio')
+            ultima_mensagem_id = int(request.GET.get('ultima_mensagem_id', 0))
+        except (ValueError, TypeError):
+            ultima_mensagem_id = 0
         
-        # Converter mensagens para JSON
-        mensagens_json = []
-        for msg in mensagens:
-            mensagens_json.append({
-                'id': msg.id,
-                'conteudo': msg.conteudo,
-                'remetente': msg.remetente.username,
-                'remetente_id': msg.remetente.id,
-                'data_envio': msg.data_envio.strftime('%d/%m/%Y %H:%M'),
-                'timestamp': msg.data_envio.timestamp()
+        # OTIMIZADO: select_related('remetente') para evitar N+1
+        novas_mensagens = Mensagem.objects.select_related('remetente').filter(
+            conversa=conversa,
+            id__gt=ultima_mensagem_id
+        ).order_by('data_envio')
+        
+        mensagens_data = []
+        for mensagem in novas_mensagens:
+            mensagens_data.append({
+                'id': mensagem.id,
+                'conteudo': mensagem.conteudo,
+                'remetente': mensagem.remetente.username,
+                'remetente_id': mensagem.remetente.id,  # ADICIONAR para o JS
+                'data_envio': mensagem.data_envio.strftime('%d/%m/%Y %H:%M'),
+                'eh_minha': mensagem.remetente == request.user
             })
         
         return JsonResponse({
-            'mensagens': mensagens_json,
-            'user_id': request.user.id
+            'mensagens': mensagens_data,
+            'success': True
         })
 
 

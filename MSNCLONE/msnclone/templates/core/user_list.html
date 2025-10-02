@@ -1,50 +1,154 @@
 {% extends "base.html" %}
-{% load crispy_forms_tags %}
 
 {% block content %}
-    <h2>Encontrar Amigos</h2>
-    
-    <form method="get" class="mb-4">
+    <div class="container-fluid">
         <div class="row">
-            <div class="col-md-10">
-                {{ filter.form.username|as_crispy_field }}
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary w-100">Buscar</button>
-            </div>
-        </div>
-    </form>
-    <p>Veja outros usuários cadastrados no sistema.</p>
-    <div class="list-group">
-        {% for user_obj in users %}
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>{{ user_obj.username }}</strong>
-                    {% if user_obj.first_name or user_obj.last_name %}
-                        <span class="text-muted">({{ user_obj.first_name }} {{ user_obj.last_name }})</span>
-                    {% endif %}
-                    <br>
-                    <small>
-                        {% if user_obj.perfil.esta_online %}
-                            <span class="badge bg-success">
-                                <i class="fas fa-circle"></i> Online
-                            </span>
-                        {% else %}
-                            <span class="badge bg-secondary">
-                                <i class="fas fa-circle"></i> Offline
-                            </span>
-                        {% endif %}
-                    </small>
+            <div class="col-md-12">
+                <h2><i class="fas fa-users"></i> Encontrar Amigos</h2>
+                
+                <!-- FILTRO -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-search"></i> Buscar Usuários</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="get">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    {{ filter.form.username }}
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Buscar
+                                    </button>
+                                    <a href="{% url 'core:user-list' %}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Limpar
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
-                <form action="{% url 'core:adicionar-amigo' user_obj.pk %}" method="post">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-success btn-sm">Adicionar</button>
-                </form>
+                <!-- LISTA DE USUÁRIOS -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-list"></i> Usuários Encontrados</h5>
+                        {% if is_paginated %}
+                            <small class="text-muted">({{ page_obj.paginator.count }} total)</small>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        {% if users %}
+                            <div class="row">
+                                {% for usuario in users %}
+                                    <div class="col-md-6 col-lg-4 mb-3">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h6 class="card-title">
+                                                    <i class="fas fa-user"></i> {{ usuario.username }}
+                                                    {% if usuario.perfil.esta_online %}
+                                                        <i class="fas fa-circle text-success" title="Online"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-circle text-secondary" title="Offline"></i>
+                                                    {% endif %}
+                                                </h6>
+                                                <p class="card-text">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-clock"></i>
+                                                        {% if usuario.perfil.ultima_atividade %}
+                                                            Última atividade: {{ usuario.perfil.ultima_atividade|timesince }} atrás
+                                                        {% else %}
+                                                            Nunca esteve online
+                                                        {% endif %}
+                                                    </small>
+                                                </p>
+                                                <div class="d-grid">
+                                                    <a href="{% url 'core:adicionar-amigo' usuario.pk %}" class="btn btn-primary btn-sm">
+                                                        <i class="fas fa-user-plus"></i> Adicionar
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
 
+                            <!-- PAGINAÇÃO -->
+                            {% if is_paginated %}
+                                <nav aria-label="Navegação de páginas" class="mt-4">
+                                    <ul class="pagination justify-content-center">
+                                        
+                                        <!-- Primeira página -->
+                                        {% if page_obj.has_previous %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?{% if request.GET.username %}username={{ request.GET.username }}&{% endif %}page=1" aria-label="Primeira">
+                                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                        
+                                        <!-- Página anterior -->
+                                        {% if page_obj.has_previous %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?{% if request.GET.username %}username={{ request.GET.username }}&{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Anterior">
+                                                    <span aria-hidden="true">&laquo;</span>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                        
+                                        <!-- Páginas numeradas -->
+                                        {% for num in page_obj.paginator.page_range %}
+                                            {% if page_obj.number == num %}
+                                                <li class="page-item active">
+                                                    <span class="page-link">{{ num }}</span>
+                                                </li>
+                                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?{% if request.GET.username %}username={{ request.GET.username }}&{% endif %}page={{ num }}">{{ num }}</a>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        <!-- Próxima página -->
+                                        {% if page_obj.has_next %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?{% if request.GET.username %}username={{ request.GET.username }}&{% endif %}page={{ page_obj.next_page_number }}" aria-label="Próxima">
+                                                    <span aria-hidden="true">&raquo;</span>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                        
+                                        <!-- Última página -->
+                                        {% if page_obj.has_next %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?{% if request.GET.username %}username={{ request.GET.username }}&{% endif %}page={{ page_obj.paginator.num_pages }}" aria-label="Última">
+                                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                        
+                                    </ul>
+                                </nav>
+                                
+                                <!-- Informações da paginação -->
+                                <div class="text-center mt-3">
+                                    <small class="text-muted">
+                                        Mostrando {{ page_obj.start_index }} - {{ page_obj.end_index }} de {{ page_obj.paginator.count }} usuários
+                                    </small>
+                                </div>
+                            {% endif %}
+                            
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-user-slash fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">Nenhum usuário encontrado</h5>
+                                <p class="text-muted">Tente ajustar os filtros de busca.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
-        {% empty %}
-             <div class="list-group-item">Nenhum usuário encontrado com esse filtro.</div>
-        {% endfor %}
+        </div>
     </div>
 {% endblock %}

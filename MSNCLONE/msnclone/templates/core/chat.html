@@ -97,7 +97,7 @@
         // Variáveis globais
         const conversaId = {{ conversa.pk }};
         const userId = {{ user.id }};
-        let ultimaMensagemTimestamp = 0;
+        let ultimaMensagemId = 0;  // MUDANÇA: usar ID ao invés de timestamp
         let chatContainer = document.getElementById('chat-container');
         let mensagensContainer = document.getElementById('mensagens-container');
         let chatForm = document.getElementById('chat-form');
@@ -109,7 +109,7 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        // Função para criar elemento de mensagem
+        // Função para criar elemento de mensagem - CORRIGIDA
         function criarElementoMensagem(mensagem) {
             const isMinhaMsg = mensagem.remetente_id === userId;
             const alignClass = isMinhaMsg ? 'text-end' : 'text-start';
@@ -119,34 +119,31 @@
             // Botões de ação apenas para mensagens próprias
             const actionsHtml = isMinhaMsg ? `
                 <div class="message-actions">
-                    <button class="btn btn-sm btn-light edit-message" data-message-id="${mensagem.id}" title="Editar">
+                    <button class="btn btn-sm btn-warning" onclick="editarMensagem(${mensagem.id})">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-sm btn-danger delete-message" data-message-id="${mensagem.id}" title="Excluir">
+                    <button class="btn btn-sm btn-danger" onclick="excluirMensagem(${mensagem.id})">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
             ` : '';
             
             return `
-                <div class="message mb-3 ${alignClass}" data-message-id="${mensagem.id}">
-                    <div class="d-inline-block p-2 rounded ${bgClass}" style="max-width: 70%; position: relative;">
-                        ${actionsHtml}
-                        <div class="message-content">
-                            ${mensagem.conteudo.replace(/\n/g, '<br>')}
+                <div class="mb-3 ${alignClass} message" data-message-id="${mensagem.id}">
+                    <div class="d-inline-block position-relative">
+                        <div class="p-2 rounded ${bgClass}" style="max-width: 300px;">
+                            <div class="message-content">${mensagem.conteudo}</div>
+                            <small class="${timeClass}">${mensagem.remetente} - ${mensagem.data_envio}</small>
                         </div>
-                        <small class="message-time ${timeClass} d-block">
-                            ${!isMinhaMsg ? mensagem.remetente + ' - ' : ''}
-                            ${mensagem.data_envio}
-                        </small>
+                        ${actionsHtml}
                     </div>
                 </div>
             `;
         }
 
-        // Função para buscar novas mensagens
+        // Função para buscar novas mensagens - MELHORADA
         function buscarMensagens() {
-            fetch(`/buscar-mensagens/${conversaId}/?ultima_mensagem=${ultimaMensagemTimestamp}`)
+            fetch(`/buscar-mensagens/${conversaId}/?ultima_mensagem_id=${ultimaMensagemId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.mensagens && data.mensagens.length > 0) {
@@ -156,11 +153,18 @@
                             semMensagens.remove();
                         }
                         
+                        // MELHORIA: Verificar se mensagem já existe antes de adicionar
                         data.mensagens.forEach(mensagem => {
-                            mensagensContainer.innerHTML += criarElementoMensagem(mensagem);
-                            ultimaMensagemTimestamp = Math.max(ultimaMensagemTimestamp, mensagem.timestamp);
+                            // Verificar se mensagem já existe no DOM
+                            const mensagemExiste = document.querySelector(`[data-message-id="${mensagem.id}"]`);
+                            
+                            if (!mensagemExiste) {
+                                mensagensContainer.innerHTML += criarElementoMensagem(mensagem);
+                                scrollToBottom();
+                            }
+                            
+                            ultimaMensagemId = Math.max(ultimaMensagemId, mensagem.id);
                         });
-                        scrollToBottom();
                     }
                 })
                 .catch(error => {
@@ -168,7 +172,7 @@
                 });
         }
 
-        // Função para enviar mensagem
+        // Função para enviar mensagem - CORRIGIDA
         function enviarMensagem(conteudo) {
             const formData = new FormData();
             formData.append('conteudo', conteudo);
@@ -181,16 +185,15 @@
             .then(response => response.json())
             .then(data => {
                 if (data.sucesso) {
-                    // Remover mensagem de "sem mensagens" se existir
-                    const semMensagens = document.getElementById('sem-mensagens');
-                    if (semMensagens) {
-                        semMensagens.remove();
-                    }
+                    // IMPORTANTE: NÃO adicionar mensagem aqui!
+                    // Deixar o polling buscar a mensagem
+                    // Apenas atualizar o ultimaMensagemId para evitar buscar esta mensagem
+                    ultimaMensagemId = Math.max(ultimaMensagemId, data.mensagem.id);
                     
-                    mensagensContainer.innerHTML += criarElementoMensagem(data.mensagem);
-                    ultimaMensagemTimestamp = Math.max(ultimaMensagemTimestamp, data.mensagem.timestamp);
-                    scrollToBottom();
                     mensagemInput.value = '';
+                    
+                    // OPCIONAL: Forçar uma busca imediata
+                    setTimeout(buscarMensagens, 100);
                 } else {
                     alert('Erro ao enviar mensagem: ' + data.erro);
                 }
