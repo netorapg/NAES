@@ -12,7 +12,7 @@ from django.http import JsonResponse
 from .models import Contato, Status, Conversa, Mensagem, Perfil
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from .filters import UserFilter
+from .filters import UserFilter, ConversaFilter
 
 class HomeView(TemplateView):
     template_name = "core/home.html"
@@ -115,13 +115,21 @@ class ResponderPedidoAmizadeView(LoginRequiredMixin, View):
 class ListarConversasView(LoginRequiredMixin, ListView):
     template_name = 'core/conversas_list.html'
     context_object_name = 'conversas'
-    paginate_by = 5  # ADICIONAR PAGINAÇÃO - 5 conversas por página
+    paginate_by = 5
+    filterset_class = ConversaFilter  # ADICIONAR FILTRO
     
     def get_queryset(self):
-        # OTIMIZADO: prefetch_related para participantes
-        return Conversa.objects.prefetch_related('participantes').filter(
+        queryset = Conversa.objects.prefetch_related('participantes').filter(
             participantes=self.request.user
         ).order_by('-data_criacao')
+        
+        self.filterset = self.filterset_class(self.request.GET, queryset=queryset)
+        return self.filterset.qs
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filter'] = self.filterset  # ADICIONAR CONTEXTO
+        return context
 
 class IniciarChatView(LoginRequiredMixin, View):
     def get(self, request, amigo_id):
